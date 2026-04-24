@@ -2,19 +2,25 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>تقرير المناوبة اليومي</title>
+<title>استمارة مناوبة نهاية الدوام</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
 
+/* =========================
+   الخلفية العامة
+========================= */
 body{
+  background:#dff3e3; /* أخضر فاتح */
   font-family: Arial;
-  background:#fff;
   margin:0;
   padding:0;
 }
 
+/* =========================
+   الصفحة
+========================= */
 .page{
   width:210mm;
   min-height:297mm;
@@ -23,11 +29,14 @@ body{
   box-sizing:border-box;
 }
 
-/* الكليشة الرسمية */
+/* =========================
+   الكليشة
+========================= */
 .header{
-  border:2px solid #1f4e79;
-  padding:10px;
-  margin-bottom:10px;
+  background:#1f6f3a; /* أخضر غامق */
+  color:white;
+  padding:12px;
+  border-radius:0;
 }
 
 .headerRow{
@@ -36,38 +45,61 @@ body{
   align-items:center;
 }
 
+/* الشعارات */
 .logo{
-  width:75px;
-  height:75px;
+  width:80px;
+  height:80px;
   object-fit:contain;
+  background:#fff;
+  padding:3px;
+  border-radius:4px;
 }
 
+/* النص الأوسط */
 .centerText{
   text-align:center;
   flex:1;
 }
 
 .ministry{
-  font-size:14px;
+  font-size:15px;
   font-weight:bold;
-  color:#1f4e79;
 }
 
-.edu{
-  font-size:12px;
+.edu,
+.schoolName{
+  font-size:13px;
 }
 
 .title{
   font-size:16px;
   font-weight:bold;
-  color:#1f4e79;
+  margin-top:4px;
 }
 
-/* الأقسام */
+/* الصفوف المختصرة */
+.metaRow{
+  display:flex;
+  justify-content:space-around;
+  margin-top:6px;
+  font-size:12px;
+}
+
+.metaRow input{
+  width:120px;
+  padding:3px;
+  border:none;
+  border-radius:3px;
+}
+
+/* =========================
+   الأقسام
+========================= */
 .section{
-  border:1px solid #1f4e79;
+  border:1px solid #1f6f3a;
   padding:8px;
   margin-top:10px;
+  background:#fff;
 }
 
 label{
@@ -75,18 +107,14 @@ label{
   font-size:13px;
 }
 
-input{
-  width:100%;
-  padding:5px;
-  margin-top:3px;
-  border:1px solid #000;
-}
-
-/* الجداول */
+/* =========================
+   الجداول (بيضاء بالكامل)
+========================= */
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:5px;
+  margin-top:6px;
+  background:#fff;
 }
 
 th,td{
@@ -94,14 +122,16 @@ th,td{
   padding:5px;
   font-size:12px;
   text-align:center;
+  background:#fff;
 }
 
 th{
-  background:#1f4e79;
-  color:white;
+  font-weight:bold;
 }
 
-/* أزرار */
+/* =========================
+   الأزرار
+========================= */
 .actions{
   text-align:center;
   margin:10px;
@@ -110,13 +140,16 @@ th{
 button{
   padding:8px 12px;
   margin:5px;
-  background:#1f4e79;
+  background:#1f6f3a;
   color:#fff;
   border:none;
   cursor:pointer;
+  border-radius:3px;
 }
 
-/* طباعة */
+/* =========================
+   الطباعة
+========================= */
 @media print{
   .actions{display:none;}
 }
@@ -128,26 +161,45 @@ button{
 
 <div class="page" id="report">
 
-<!-- الكليشة -->
+<!-- =========================
+     الكليشة
+========================= -->
 <div class="header">
 
-<div class="headerRow">
+  <div class="headerRow">
 
-<img id="moeLogo" class="logo">
+    <!-- شعار الوزارة -->
+    <img id="moeLogo" class="logo">
 
-<div class="centerText">
-  <div class="ministry">وزارة التعليم</div>
-  <div class="edu">الإدارة العامة للتعليم</div>
-  <div class="title">تقرير المناوبة اليومي</div>
+    <!-- النص الأوسط -->
+    <div class="centerText">
+
+      <div class="ministry">وزارة التعليم</div>
+      <div class="edu">الإدارة العامة للتعليم ............</div>
+      <div class="schoolName">مدرسة ............</div>
+      <div class="title">استمارة مناوبة نهاية الدوام</div>
+
+      <div class="metaRow">
+        <div>العام الدراسي: <input id="yearSmall"></div>
+        <div>الفصل: <input id="termSmall"></div>
+      </div>
+
+      <div class="metaRow">
+        <div>اليوم: <input id="daySmall"></div>
+        <div>التاريخ: <input type="date" id="dateSmall"></div>
+      </div>
+
+    </div>
+
+    <!-- شعار المدرسة -->
+    <img id="schoolLogo" class="logo">
+
+  </div>
 </div>
 
-<img id="schoolLogo" class="logo">
-
-</div>
-
-</div>
-
-<!-- رفع الشعارات -->
+<!-- =========================
+     رفع الشعارات
+========================= -->
 <div class="section">
 
 <label>شعار وزارة التعليم</label>
@@ -158,27 +210,9 @@ button{
 
 </div>
 
-<!-- بيانات المدرسة -->
-<div class="section">
-
-<label>اسم المدرسة</label>
-<input id="school">
-
-<label>العام الدراسي</label>
-<input id="year">
-
-<label>الفصل الدراسي</label>
-<input id="term">
-
-<label>اليوم</label>
-<input id="day">
-
-<label>التاريخ</label>
-<input type="date" id="date">
-
-</div>
-
-<!-- الموظف -->
+<!-- =========================
+     الموظف
+========================= -->
 <div class="section">
 
 <label>الموظف المناوب</label>
@@ -192,15 +226,16 @@ button{
 
 <tr>
 <td><input id="staffName"></td>
-<td><input id="staffSign" placeholder="الاسم كتوقيع"></td>
+<td><input id="staffSign" placeholder="يكتب الاسم كتوقيع"></td>
 <td><input id="staffNote"></td>
 </tr>
-
 </table>
 
 </div>
 
-<!-- المتأخرون -->
+<!-- =========================
+     الطلاب المتأخرون
+========================= -->
 <div class="section">
 
 <label>الطلاب المتأخرون</label>
@@ -219,7 +254,9 @@ button{
 
 </div>
 
-<!-- المخالفون -->
+<!-- =========================
+     المخالفون
+========================= -->
 <div class="section">
 
 <label>الطلاب المخالفون</label>
@@ -238,7 +275,9 @@ button{
 
 </div>
 
-<!-- التوقيعات -->
+<!-- =========================
+     التوقيعات
+========================= -->
 <div class="section">
 
 <label>وكيل الشؤون التعليمية</label>
@@ -249,6 +288,9 @@ button{
 
 </div>
 
+<!-- =========================
+     العبارة الختامية
+========================= -->
 <div class="section" style="text-align:center;font-size:13px;">
 يتم تسليم هذا التقرير إلى وكيل الشؤون التعليمية في اليوم التالي للمناوبة.
 </div>
@@ -259,7 +301,9 @@ button{
 
 </div>
 
-<!-- أزرار -->
+<!-- =========================
+     الأزرار
+========================= -->
 <div class="actions">
 <button onclick="downloadPDF()">حفظ PDF</button>
 <button onclick="sendWhatsApp()">إرسال واتساب</button>
@@ -267,7 +311,9 @@ button{
 
 <script>
 
-/* رفع الشعارات */
+/* =========================
+   رفع الشعارات
+========================= */
 function loadLogo(event,type){
 
   const file = event.target.files[0];
@@ -290,7 +336,9 @@ function loadLogo(event,type){
   reader.readAsDataURL(file);
 }
 
-/* إضافة متأخرين */
+/* =========================
+   إضافة متأخرين
+========================= */
 function addLate(){
   const row = document.getElementById("lateTable").insertRow();
   row.innerHTML = `
@@ -302,7 +350,9 @@ function addLate(){
   `;
 }
 
-/* إضافة مخالفين */
+/* =========================
+   إضافة مخالفين
+========================= */
 function addVio(){
   const row = document.getElementById("vioTable").insertRow();
   row.innerHTML = `
@@ -314,7 +364,9 @@ function addVio(){
   `;
 }
 
-/* PDF */
+/* =========================
+   PDF
+========================= */
 function downloadPDF(){
   html2pdf().set({
     margin:0,
@@ -325,13 +377,15 @@ function downloadPDF(){
   }).from(document.getElementById("report")).save();
 }
 
-/* WhatsApp شامل */
+/* =========================
+   WhatsApp (ملخص)
+========================= */
 function sendWhatsApp(){
 
-  let text = "📋 تقرير المناوبة اليومي\n\n";
+  let text = "📋 استمارة مناوبة نهاية الدوام\n\n";
 
-  text += "المدرسة: " + document.getElementById("school").value + "\n";
-  text += "التاريخ: " + document.getElementById("date").value + "\n";
+  text += "المدرسة: " + document.getElementById("schoolName")?.value + "\n";
+  text += "التاريخ: " + document.getElementById("dateSmall").value + "\n";
   text += "الموظف: " + document.getElementById("staffName").value + "\n";
 
   text += "\nتم إعداد التقرير إلكترونيًا.";
