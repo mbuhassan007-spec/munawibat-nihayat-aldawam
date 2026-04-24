@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <title>استمارة مناوبة نهاية الدوام</title>
 
+<!-- PDF Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 
 body{
@@ -69,7 +73,7 @@ input{
 
 textarea{
   width:100%;
-  min-height:50px;
+  min-height:60px;
   padding:4px;
   resize:vertical;
 }
@@ -80,9 +84,7 @@ textarea{
   margin-top:8px;
 }
 
-.row div{
-  flex:1;
-}
+.row div{flex:1;}
 
 .section{
   background:#fff;
@@ -115,6 +117,13 @@ button{
   padding:8px;
   margin:5px;
   cursor:pointer;
+}
+
+canvas{
+  border:1px solid #000;
+  background:#fff;
+  width:100%;
+  height:120px;
 }
 
 @media print{
@@ -186,15 +195,15 @@ button{
 </div>
 
 <div>
-<label>التاريخ (ميلادي)</label>
+<label>التاريخ الميلادي</label>
 <input type="date" id="dateGreg" onchange="convertToHijri();autoDay();">
 </div>
 </div>
 
 <div class="row">
 <div>
-<label>التاريخ (هجري)</label>
-<input id="dateHijri" readonly>
+<label>التاريخ الهجري</label>
+<input id="dateHijri">
 </div>
 </div>
 
@@ -206,10 +215,18 @@ button{
 <label>الموظف المناوب</label>
 
 <table>
-<tr><th>الاسم</th><th>التوقيع</th><th>ملاحظات</th></tr>
+<tr>
+<th>الاسم</th>
+<th>التوقيع الإلكتروني</th>
+<th>ملاحظات</th>
+</tr>
 <tr>
 <td><input id="staffName"></td>
-<td><input id="staffSign"></td>
+<td>
+<canvas id="signaturePad"></canvas>
+<br>
+<button onclick="clearSignature()">مسح التوقيع</button>
+</td>
 <td><textarea id="staffNote"></textarea></td>
 </tr>
 </table>
@@ -218,77 +235,55 @@ button{
 
 <!-- المتأخرون -->
 <div class="section">
-
 <label>المتأخرون</label>
-
 <table id="lateTable">
-<tr>
-<th>الاسم</th><th>الفصل</th><th>الزمن</th><th>الإجراء</th><th>ملاحظات</th>
-</tr>
+<tr><th>الاسم</th><th>الفصل</th><th>الزمن</th><th>الإجراء</th><th>ملاحظات</th></tr>
 </table>
-
 <button onclick="addRow('lateTable')">إضافة</button>
-
 </div>
 
 <!-- المخالفون -->
 <div class="section">
-
 <label>المخالفون</label>
-
 <table id="vioTable">
-<tr>
-<th>الاسم</th><th>الفصل</th><th>الزمن</th><th>الإجراء</th><th>ملاحظات</th>
-</tr>
+<tr><th>الاسم</th><th>الفصل</th><th>الزمن</th><th>الإجراء</th><th>ملاحظات</th></tr>
 </table>
-
 <button onclick="addRow('vioTable')">إضافة</button>
-
 </div>
 
 </div>
 
-<!-- الأزرار -->
+<!-- أزرار -->
 <div class="actions">
 
-<button onclick="handleSubmit()">حفظ وإرسال</button>
-<button onclick="window.print()">PDF</button>
+<button onclick="handleSubmit()">حفظ PDF + إرسال</button>
 
 </div>
 
 <script>
 
-/* رفع الشعار */
-function loadLogo(event,type){
-const file=event.target.files[0];
-if(!file) return;
+/* رفع شعار */
+function loadLogo(e,type){
+const file=e.target.files[0];
 const reader=new FileReader();
-reader.onload=e=>{
-if(type==="moe"){
-document.getElementById("moeLogo").src=e.target.result;
-}else{
-document.getElementById("schoolLogo").src=e.target.result;
-}
+reader.onload=ev=>{
+document.getElementById(type==="moe"?"moeLogo":"schoolLogo").src=ev.target.result;
 };
 reader.readAsDataURL(file);
 }
 
-/* توليد اليوم تلقائي */
+/* اليوم */
 function autoDay(){
 const g=document.getElementById("dateGreg").value;
-if(!g) return;
 const days=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 document.getElementById("day").value=days[new Date(g).getDay()];
 }
 
-/* تحويل هجري (مستقر بدون مكتبات) */
+/* هجري تقريبي */
 function convertToHijri(){
-
-const g=document.getElementById("dateGreg").value;
+const g=new Date(document.getElementById("dateGreg").value);
 if(!g) return;
-
-const d=new Date(g);
-const jd=Math.floor((d/86400000)+2440587.5);
+const jd=Math.floor((g/86400000)+2440587.5);
 const l=jd-1948440+10632;
 const n=Math.floor((l-1)/10631);
 const l2=l-10631*n+354;
@@ -300,55 +295,77 @@ const l3=l2-(Math.floor((30-j)/15))*(Math.floor((17719*j)/50))
 -(Math.floor(j/16))*(Math.floor((15238*j)/43))+29;
 
 const m=Math.floor((24*l3)/709);
-const day=l3-Math.floor((709*m)/24);
+const d=l3-Math.floor((709*m)/24);
 const y=30*n+j-30;
 
-document.getElementById("dateHijri").value=y+"/"+m+"/"+day;
-
+document.getElementById("dateHijri").value=
+y+"/"+m+"/"+d;
 }
 
-/* واتساب */
+/* التوقيع */
+let canvas=document.getElementById("signaturePad");
+let ctx=canvas.getContext("2d");
+let drawing=false;
+
+canvas.onmousedown=()=>drawing=true;
+canvas.onmouseup=()=>drawing=false;
+canvas.onmousemove=draw;
+
+function draw(e){
+if(!drawing)return;
+let r=canvas.getBoundingClientRect();
+ctx.lineTo(e.clientX-r.left,e.clientY-r.top);
+ctx.stroke();
+}
+
+function clearSignature(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.beginPath();
+}
+
+/* PDF */
+async function generatePDF(){
+const { jsPDF } = window.jspdf;
+const element=document.querySelector(".page");
+
+const canvas=await html2canvas(element,{scale:2});
+const img=canvas.toDataURL("image/png");
+
+const pdf=new jsPDF("p","mm","a4");
+pdf.addImage(img,"PNG",0,0,210,297);
+pdf.save("munawaba.pdf");
+}
+
+/* WhatsApp */
 function sendWhatsApp(){
 
-const edu=document.getElementById("eduName").value || "الإدارة العامة للتعليم";
+const edu=document.getElementById("eduName").value||"الإدارة العامة للتعليم";
 const school=document.getElementById("schoolNameHeader").value;
-
-if(!school){
-alert("يرجى إدخال اسم المدرسة");
-return;
-}
 
 let text="📋 استمارة مناوبة نهاية الدوام\n\n";
 
 text+="الإدارة: "+edu+"\n";
 text+="المدرسة: "+school+"\n";
+text+="الموظف: "+document.getElementById("staffName").value+"\n";
 text+="اليوم: "+document.getElementById("day").value+"\n";
-text+="الميلادي: "+document.getElementById("dateGreg").value+"\n";
-text+="الهجري: "+document.getElementById("dateHijri").value+"\n\n";
+text+="ميلادي: "+document.getElementById("dateGreg").value+"\n";
+text+="هجري: "+document.getElementById("dateHijri").value+"\n\n";
 
-text+="📝 ملاحظات الموظف:\n"+document.getElementById("staffNote").value+"\n\n";
-
-text+="✅ تم تعبئة الاستمارة بنجاح";
+text+="📝 ملاحظات:\n"+document.getElementById("staffNote").value+"\n";
 
 window.open("https://wa.me/?text="+encodeURIComponent(text));
-
 }
 
-/* تنفيذ */
-function handleSubmit(){
+/* تشغيل كامل */
+async function handleSubmit(){
+await generatePDF();
 sendWhatsApp();
 }
 
 /* إضافة صف */
 function addRow(id){
 let r=document.getElementById(id).insertRow();
-r.innerHTML=`
-<td><input></td>
-<td><input></td>
-<td><input></td>
-<td><input></td>
-<td><textarea></textarea></td>
-`;
+r.innerHTML=`<td><input></td><td><input></td><td><input></td><td><input></td><td><textarea></textarea></td>`;
 }
 
 </script>
