@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>استمارة مناوبة نهاية الدوام</title>
 
-<!-- PDF Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -54,36 +53,19 @@ body{
   object-fit:contain;
 }
 
-.centerText{
-  text-align:center;
-  flex:1;
-}
+.centerText{text-align:center;flex:1;}
+.title{font-size:16px;font-weight:bold;}
 
-.title{
-  font-size:16px;
-  font-weight:bold;
-}
-
-input{
+input,textarea{
   width:100%;
   padding:4px;
   border:1px solid #ccc;
   border-radius:3px;
 }
 
-textarea{
-  width:100%;
-  min-height:60px;
-  padding:4px;
-  resize:vertical;
-}
+textarea{min-height:60px;}
 
-.row{
-  display:flex;
-  gap:10px;
-  margin-top:8px;
-}
-
+.row{display:flex;gap:10px;margin-top:8px;}
 .row div{flex:1;}
 
 .section{
@@ -119,17 +101,16 @@ button{
   cursor:pointer;
 }
 
-canvas{
-  border:1px solid #000;
-  background:#fff;
+/* التوقيع */
+#signaturePad{
   width:100%;
   height:120px;
+  background:#fff;
+  border:1px solid #000;
+  touch-action:none;
 }
 
-@media print{
-  .actions{display:none;}
-  body{background:#fff;}
-}
+@media print{.actions{display:none;}body{background:#fff;}}
 
 </style>
 </head>
@@ -177,34 +158,17 @@ canvas{
 <div class="section">
 
 <div class="row">
-<div>
-<label>العام الدراسي</label>
-<input id="year">
-</div>
-
-<div>
-<label>الفصل الدراسي</label>
-<input id="term">
-</div>
+<div><label>العام الدراسي</label><input id="year"></div>
+<div><label>الفصل الدراسي</label><input id="term"></div>
 </div>
 
 <div class="row">
-<div>
-<label>اليوم</label>
-<input id="day">
-</div>
-
-<div>
-<label>التاريخ الميلادي</label>
-<input type="date" id="dateGreg" onchange="convertToHijri();autoDay();">
-</div>
+<div><label>اليوم</label><input id="day"></div>
+<div><label>التاريخ الميلادي</label><input type="date" id="dateGreg" onchange="convertToHijri();autoDay();"></div>
 </div>
 
 <div class="row">
-<div>
-<label>التاريخ الهجري</label>
-<input id="dateHijri">
-</div>
+<div><label>التاريخ الهجري</label><input id="dateHijri"></div>
 </div>
 
 </div>
@@ -220,43 +184,28 @@ canvas{
 <th>التوقيع الإلكتروني</th>
 <th>ملاحظات</th>
 </tr>
+
 <tr>
 <td><input id="staffName"></td>
+
 <td>
 <canvas id="signaturePad"></canvas>
 <br>
-<button onclick="clearSignature()">مسح التوقيع</button>
+<button onclick="clearSignature()">مسح</button>
 </td>
+
 <td><textarea id="staffNote"></textarea></td>
 </tr>
 </table>
 
 </div>
 
-<!-- المتأخرون -->
-<div class="section">
-<label>المتأخرون</label>
-<table id="lateTable">
-<tr><th>الاسم</th><th>الفصل</th><th>الزمن</th><th>الإجراء</th><th>ملاحظات</th></tr>
-</table>
-<button onclick="addRow('lateTable')">إضافة</button>
-</div>
-
-<!-- المخالفون -->
-<div class="section">
-<label>المخالفون</label>
-<table id="vioTable">
-<tr><th>الاسم</th><th>الفصل</th><th>الزمن</th><th>الإجراء</th><th>ملاحظات</th></tr>
-</table>
-<button onclick="addRow('vioTable')">إضافة</button>
-</div>
-
-</div>
-
-<!-- أزرار -->
+<!-- الأزرار -->
 <div class="actions">
 
 <button onclick="handleSubmit()">حفظ PDF + إرسال</button>
+
+</div>
 
 </div>
 
@@ -265,6 +214,7 @@ canvas{
 /* رفع شعار */
 function loadLogo(e,type){
 const file=e.target.files[0];
+if(!file) return;
 const reader=new FileReader();
 reader.onload=ev=>{
 document.getElementById(type==="moe"?"moeLogo":"schoolLogo").src=ev.target.result;
@@ -275,6 +225,7 @@ reader.readAsDataURL(file);
 /* اليوم */
 function autoDay(){
 const g=document.getElementById("dateGreg").value;
+if(!g) return;
 const days=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 document.getElementById("day").value=days[new Date(g).getDay()];
 }
@@ -283,6 +234,7 @@ document.getElementById("day").value=days[new Date(g).getDay()];
 function convertToHijri(){
 const g=new Date(document.getElementById("dateGreg").value);
 if(!g) return;
+
 const jd=Math.floor((g/86400000)+2440587.5);
 const l=jd-1948440+10632;
 const n=Math.floor((l-1)/10631);
@@ -298,30 +250,35 @@ const m=Math.floor((24*l3)/709);
 const d=l3-Math.floor((709*m)/24);
 const y=30*n+j-30;
 
-document.getElementById("dateHijri").value=
-y+"/"+m+"/"+d;
+document.getElementById("dateHijri").value=y+"/"+m+"/"+d;
 }
 
-/* التوقيع */
-let canvas=document.getElementById("signaturePad");
-let ctx=canvas.getContext("2d");
-let drawing=false;
+/* التوقيع (إصلاح كامل) */
+let canvas,ctx,drawing=false;
 
-canvas.onmousedown=()=>drawing=true;
-canvas.onmouseup=()=>drawing=false;
-canvas.onmousemove=draw;
+window.onload=function(){
+
+canvas=document.getElementById("signaturePad");
+ctx=canvas.getContext("2d");
+
+canvas.addEventListener("pointerdown",()=>drawing=true);
+canvas.addEventListener("pointerup",()=>drawing=false);
+canvas.addEventListener("pointermove",draw);
 
 function draw(e){
 if(!drawing)return;
 let r=canvas.getBoundingClientRect();
+ctx.lineWidth=2;
 ctx.lineTo(e.clientX-r.left,e.clientY-r.top);
 ctx.stroke();
 }
 
-function clearSignature(){
+window.clearSignature=function(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
 ctx.beginPath();
-}
+};
+
+};
 
 /* PDF */
 async function generatePDF(){
@@ -339,8 +296,8 @@ pdf.save("munawaba.pdf");
 /* WhatsApp */
 function sendWhatsApp(){
 
-const edu=document.getElementById("eduName").value||"الإدارة العامة للتعليم";
-const school=document.getElementById("schoolNameHeader").value;
+let edu=document.getElementById("eduName").value||"الإدارة العامة للتعليم";
+let school=document.getElementById("schoolNameHeader").value;
 
 let text="📋 استمارة مناوبة نهاية الدوام\n\n";
 
@@ -349,23 +306,18 @@ text+="المدرسة: "+school+"\n";
 text+="الموظف: "+document.getElementById("staffName").value+"\n";
 text+="اليوم: "+document.getElementById("day").value+"\n";
 text+="ميلادي: "+document.getElementById("dateGreg").value+"\n";
-text+="هجري: "+document.getElementById("dateHijri").value+"\n\n";
+text+="هجري: "+document.getElementById("dateHijri").value+"\n";
 
-text+="📝 ملاحظات:\n"+document.getElementById("staffNote").value+"\n";
+text+="\n📝 ملاحظات:\n"+document.getElementById("staffNote").value;
 
 window.open("https://wa.me/?text="+encodeURIComponent(text));
+
 }
 
 /* تشغيل كامل */
 async function handleSubmit(){
 await generatePDF();
 sendWhatsApp();
-}
-
-/* إضافة صف */
-function addRow(id){
-let r=document.getElementById(id).insertRow();
-r.innerHTML=`<td><input></td><td><input></td><td><input></td><td><input></td><td><textarea></textarea></td>`;
 }
 
 </script>
