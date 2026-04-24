@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقرير المناوبة اليومي</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+body{
+  font-family: "Arial", sans-serif;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+/* صفحة A4 */
+.page{
+  width: 210mm;
+  min-height: 297mm;
+  margin: auto;
+  padding: 15mm;
+  box-sizing: border-box;
+}
+
+/* الترويسة الرسمية */
+.header{
+  text-align: center;
+  border-bottom: 2px solid #000;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.header h2{
+  margin: 5px 0;
+  font-size: 18px;
+}
+
+.header h3{
+  margin: 0;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+/* أقسام النموذج */
+.section{
+  margin-bottom: 12px;
+}
+
+.row{
+  display: flex;
+  gap: 10px;
+}
+
+.field{
+  flex: 1;
+}
+
+label{
+  font-weight: bold;
+  font-size: 13px;
+}
+
+input{
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #000;
+  box-sizing: border-box;
+}
+
+/* الجداول الرسمية */
+table{
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+th, td{
+  border: 1px solid #000;
+  padding: 6px;
+  text-align: center;
+}
+
+/* العبارة النهائية */
+.note{
+  margin-top: 15px;
+  font-size: 13px;
+}
+
+/* التوقيعات */
+.signatures{
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.sign-box{
+  width: 45%;
+}
+
+/* الأزرار */
+.actions{
+  text-align: center;
+  margin: 15px;
+}
+
+button{
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+/* إخفاء الأزرار في الطباعة */
+@media print{
+  .actions{ display:none; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page" id="report">
+
+<!-- الترويسة الرسمية -->
+<div class="header">
+  <h3>وزارة التعليم</h3>
+  <h3 id="eduAdminTitle">الإدارة العامة للتعليم ............</h3>
+  <h2>تقرير المناوبة اليومي</h2>
+  <h3>للعام الدراسي: <input id="year" style="border:none; border-bottom:1px solid #000; width:120px;"></h3>
+</div>
+
+<!-- بيانات أساسية -->
+<div class="section row">
+  <div class="field">
+    <label>اسم المدرسة</label>
+    <input id="school">
+  </div>
+
+  <div class="field">
+    <label>الفصل الدراسي</label>
+    <input id="term">
+  </div>
+</div>
+
+<div class="section row">
+  <div class="field">
+    <label>اليوم</label>
+    <input id="day">
+  </div>
+
+  <div class="field">
+    <label>التاريخ</label>
+    <input type="date" id="date">
+  </div>
+</div>
+
+<!-- الموظف المناوب -->
+<div class="section">
+<label>الموظف المناوب</label>
+<table>
+<tr>
+<th>الاسم</th>
+<th>التوقيع</th>
+<th>ملاحظات</th>
+</tr>
+<tr>
+<td><input id="staffName"></td>
+<td><input id="staffSign"></td>
+<td><input id="staffNote"></td>
+</tr>
+</table>
+</div>
+
+<!-- المتأخرون -->
+<div class="section">
+<label>أسماء الطلاب المتأخرين</label>
+<table>
+<tr>
+<th>الاسم</th>
+<th>الفصل</th>
+<th>الزمن</th>
+<th>الإجراء</th>
+<th>ملاحظات</th>
+</tr>
+<tr>
+<td><input id="lateName"></td>
+<td><input id="lateClass"></td>
+<td><input id="lateTime"></td>
+<td><input id="lateAction"></td>
+<td><input id="lateNote"></td>
+</tr>
+</table>
+</div>
+
+<!-- المخالفون -->
+<div class="section">
+<label>أسماء الطلاب المخالفين</label>
+<table>
+<tr>
+<th>الاسم</th>
+<th>الفصل</th>
+<th>الزمن</th>
+<th>الإجراء</th>
+<th>ملاحظات</th>
+</tr>
+<tr>
+<td><input id="vioName"></td>
+<td><input id="vioClass"></td>
+<td><input id="vioTime"></td>
+<td><input id="vioAction"></td>
+<td><input id="vioNote"></td>
+</tr>
+</table>
+</div>
+
+<!-- العبارة الرسمية -->
+<div class="note">
+يتم تسليم هذا التقرير إلى وكيل الشؤون التعليمية في اليوم التالي للمناوبة.
+</div>
+
+<!-- التوقيعات -->
+<div class="signatures">
+  <div class="sign-box">
+    <label>وكيل الشؤون التعليمية</label>
+    <input id="agent">
+  </div>
+
+  <div class="sign-box">
+    <label>مدير المدرسة</label>
+    <input id="principal">
+  </div>
+</div>
+
+<div style="text-align:center; margin-top:20px; font-size:12px;">
+حقوق التصميم محفوظة: مصطفى بوحسن
+</div>
+
+</div>
+
+<!-- الأزرار -->
+<div class="actions">
+<button onclick="downloadPDF()">حفظ PDF</button>
+</div>
+
+<script>
+function getFileName(){
+  const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+  return `تقرير_المناوبة_${date}.pdf`;
+}
+
+function downloadPDF(){
+  const element = document.getElementById('report');
+
+  html2pdf().set({
+    margin: 0,
+    filename: getFileName(),
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(element).save();
+}
+</script>
+
+</body>
+</html>
