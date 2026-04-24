@@ -12,31 +12,31 @@
    الخلفية العامة
 ========================= */
 body{
-  background:#dff3e3; /* أخضر فاتح */
+  background:#dff3e3;
   font-family: Arial;
   margin:0;
   padding:0;
 }
 
 /* =========================
-   الصفحة
+   الصفحة (A4)
 ========================= */
 .page{
   width:210mm;
-  min-height:297mm;
+  height:297mm;
   margin:auto;
-  padding:12mm;
+  padding:10mm;
   box-sizing:border-box;
+  overflow:hidden; /* مهم لمنع التمدد */
 }
 
 /* =========================
    الكليشة
 ========================= */
 .header{
-  background:#1f6f3a; /* أخضر غامق */
-  color:white;
-  padding:12px;
-  border-radius:0;
+  background:#1f6f3a;
+  color:#fff;
+  padding:10px;
 }
 
 .headerRow{
@@ -47,8 +47,8 @@ body{
 
 /* الشعارات */
 .logo{
-  width:80px;
-  height:80px;
+  width:75px;
+  height:75px;
   object-fit:contain;
   background:#fff;
   padding:3px;
@@ -66,8 +66,7 @@ body{
   font-weight:bold;
 }
 
-.edu,
-.schoolName{
+.edu, .schoolName{
   font-size:13px;
 }
 
@@ -77,19 +76,21 @@ body{
   margin-top:4px;
 }
 
-/* الصفوف المختصرة */
+/* إدخالات الكليشة */
+.header input{
+  width:180px;
+  padding:3px;
+  border:none;
+  border-radius:3px;
+  margin-top:3px;
+}
+
+/* صفوف مختصرة */
 .metaRow{
   display:flex;
   justify-content:space-around;
   margin-top:6px;
   font-size:12px;
-}
-
-.metaRow input{
-  width:120px;
-  padding:3px;
-  border:none;
-  border-radius:3px;
 }
 
 /* =========================
@@ -98,7 +99,7 @@ body{
 .section{
   border:1px solid #1f6f3a;
   padding:8px;
-  margin-top:10px;
+  margin-top:8px;
   background:#fff;
 }
 
@@ -117,7 +118,7 @@ table{
   background:#fff;
 }
 
-th,td{
+th, td{
   border:1px solid #000;
   padding:5px;
   font-size:12px;
@@ -166,35 +167,34 @@ button{
 ========================= -->
 <div class="header">
 
-  <div class="headerRow">
+<div class="headerRow">
 
-    <!-- شعار الوزارة -->
-    <img id="moeLogo" class="logo">
+<img id="moeLogo" class="logo">
 
-    <!-- النص الأوسط -->
-    <div class="centerText">
+<div class="centerText">
 
-      <div class="ministry">وزارة التعليم</div>
-      <div class="edu">الإدارة العامة للتعليم ............</div>
-      <div class="schoolName">مدرسة ............</div>
-      <div class="title">استمارة مناوبة نهاية الدوام</div>
+<div class="ministry">وزارة التعليم</div>
 
-      <div class="metaRow">
-        <div>العام الدراسي: <input id="yearSmall"></div>
-        <div>الفصل: <input id="termSmall"></div>
-      </div>
+<div class="edu">
+الإدارة العامة للتعليم:
+<br>
+<input id="eduName" placeholder="اكتب الإدارة التعليمية">
+</div>
 
-      <div class="metaRow">
-        <div>اليوم: <input id="daySmall"></div>
-        <div>التاريخ: <input type="date" id="dateSmall"></div>
-      </div>
+<div class="schoolName">
+مدرسة:
+<br>
+<input id="schoolNameHeader" placeholder="اسم المدرسة">
+</div>
 
-    </div>
+<div class="title">استمارة مناوبة نهاية الدوام</div>
 
-    <!-- شعار المدرسة -->
-    <img id="schoolLogo" class="logo">
+</div>
 
-  </div>
+<img id="schoolLogo" class="logo">
+
+</div>
+
 </div>
 
 <!-- =========================
@@ -207,6 +207,25 @@ button{
 
 <label>شعار المدرسة</label>
 <input type="file" accept="image/*" onchange="loadLogo(event,'school')">
+
+</div>
+
+<!-- =========================
+     بيانات إضافية
+========================= -->
+<div class="section">
+
+<label>العام الدراسي</label>
+<input id="year">
+
+<label>الفصل الدراسي</label>
+<input id="term">
+
+<label>اليوم</label>
+<input id="day">
+
+<label>التاريخ</label>
+<input type="date" id="date">
 
 </div>
 
@@ -226,7 +245,7 @@ button{
 
 <tr>
 <td><input id="staffName"></td>
-<td><input id="staffSign" placeholder="يكتب الاسم كتوقيع"></td>
+<td><input id="staffSign"></td>
 <td><input id="staffNote"></td>
 </tr>
 </table>
@@ -234,7 +253,7 @@ button{
 </div>
 
 <!-- =========================
-     الطلاب المتأخرون
+     المتأخرون
 ========================= -->
 <div class="section">
 
@@ -289,7 +308,7 @@ button{
 </div>
 
 <!-- =========================
-     العبارة الختامية
+     ختام
 ========================= -->
 <div class="section" style="text-align:center;font-size:13px;">
 يتم تسليم هذا التقرير إلى وكيل الشؤون التعليمية في اليوم التالي للمناوبة.
@@ -305,8 +324,10 @@ button{
      الأزرار
 ========================= -->
 <div class="actions">
+
 <button onclick="downloadPDF()">حفظ PDF</button>
 <button onclick="sendWhatsApp()">إرسال واتساب</button>
+
 </div>
 
 <script>
@@ -337,7 +358,7 @@ function loadLogo(event,type){
 }
 
 /* =========================
-   إضافة متأخرين
+   إضافة طلاب
 ========================= */
 function addLate(){
   const row = document.getElementById("lateTable").insertRow();
@@ -350,9 +371,6 @@ function addLate(){
   `;
 }
 
-/* =========================
-   إضافة مخالفين
-========================= */
 function addVio(){
   const row = document.getElementById("vioTable").insertRow();
   row.innerHTML = `
@@ -368,29 +386,32 @@ function addVio(){
    PDF
 ========================= */
 function downloadPDF(){
+
   html2pdf().set({
     margin:0,
     filename:'تقرير_المناوبة.pdf',
     image:{type:'jpeg',quality:1},
     html2canvas:{scale:2},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['avoid-all']}
   }).from(document.getElementById("report")).save();
+
 }
 
 /* =========================
-   WhatsApp (ملخص)
+   WhatsApp
 ========================= */
 function sendWhatsApp(){
 
   let text = "📋 استمارة مناوبة نهاية الدوام\n\n";
 
-  text += "المدرسة: " + document.getElementById("schoolName")?.value + "\n";
-  text += "التاريخ: " + document.getElementById("dateSmall").value + "\n";
+  text += "الإدارة: " + document.getElementById("eduName").value + "\n";
+  text += "المدرسة: " + document.getElementById("schoolNameHeader").value + "\n";
+  text += "التاريخ: " + document.getElementById("date").value + "\n";
   text += "الموظف: " + document.getElementById("staffName").value + "\n";
 
-  text += "\nتم إعداد التقرير إلكترونيًا.";
-
   window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+
 }
 
 </script>
