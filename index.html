@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>استمارة مناوبة نهاية الدوام</title>
+<title>نظام مناوبة نهاية الدوام</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -10,14 +10,13 @@
 <style>
 
 body{
-  background:#dff3e3;
-  font-family:Arial;
   margin:0;
+  font-family:Arial;
+  background:#dff3e3;
 }
 
-.page{
+.container{
   width:210mm;
-  min-height:297mm;
   margin:auto;
   padding:10mm;
   background:#dff3e3;
@@ -29,295 +28,190 @@ body{
   padding:10px;
 }
 
-.headerRow{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.logoBox{
-  width:75px;
-  height:75px;
-  background:#fff;
-  border-radius:5px;
-  overflow:hidden;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.logoBox img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-}
-
-.centerText{text-align:center;flex:1;}
-.title{font-size:16px;font-weight:bold;}
-
-input,textarea{
-  width:100%;
-  padding:4px;
-  border:1px solid #ccc;
-  border-radius:3px;
-}
-
-textarea{min-height:60px;}
-
-.row{display:flex;gap:10px;margin-top:8px;}
-.row div{flex:1;}
+.row{display:flex;gap:10px;margin-top:10px;}
+.row > div{flex:1;}
 
 .section{
   background:#fff;
-  margin-top:8px;
-  padding:8px;
-  border:1px solid #1f6f3a;
+  padding:10px;
+  margin-top:10px;
 }
 
-table{
+input,textarea{
   width:100%;
-  border-collapse:collapse;
+  padding:6px;
+  box-sizing:border-box;
 }
 
-th,td{
+canvas{
+  width:100%;
+  height:120px;
   border:1px solid #000;
-  padding:5px;
-  font-size:12px;
-  text-align:center;
-}
-
-.actions{
-  text-align:center;
-  margin:10px;
+  background:#fff;
+  touch-action:none;
 }
 
 button{
   background:#1f6f3a;
   color:#fff;
-  border:none;
+  border:0;
   padding:8px;
   margin:5px;
   cursor:pointer;
 }
-
-/* التوقيع */
-#signaturePad{
-  width:100%;
-  height:120px;
-  background:#fff;
-  border:1px solid #000;
-  touch-action:none;
-}
-
-@media print{.actions{display:none;}body{background:#fff;}}
 
 </style>
 </head>
 
 <body>
 
-<div class="page">
+<div class="container" id="form">
 
-<!-- الكليشة -->
 <div class="header">
-<div class="headerRow">
+وزارة التعليم<br>
 
-<label class="logoBox">
-<img id="moeLogo">
-<input type="file" accept="image/*" onchange="loadLogo(event,'moe')" hidden>
-</label>
-
-<div class="centerText">
-
-<div>وزارة التعليم</div>
-
-<div>
-الإدارة العامة للتعليم:
-<input id="eduName" placeholder="مثال: المنطقة الشرقية">
-</div>
-
-<div>
-مدرسة:
-<input id="schoolNameHeader">
-</div>
-
-<div class="title">استمارة مناوبة نهاية الدوام</div>
+الإدارة:
+<input id="edu">
 
 </div>
 
-<label class="logoBox">
-<img id="schoolLogo">
-<input type="file" accept="image/*" onchange="loadLogo(event,'school')" hidden>
-</label>
-
-</div>
-</div>
-
-<!-- البيانات -->
 <div class="section">
 
 <div class="row">
-<div><label>العام الدراسي</label><input id="year"></div>
-<div><label>الفصل الدراسي</label><input id="term"></div>
+<div>
+<label>المدرسة</label>
+<input id="school">
+</div>
+
+<div>
+<label>التاريخ الميلادي</label>
+<input type="date" id="greg" onchange="updateDate()">
+</div>
 </div>
 
 <div class="row">
-<div><label>اليوم</label><input id="day"></div>
-<div><label>التاريخ الميلادي</label><input type="date" id="dateGreg" onchange="convertToHijri();autoDay();"></div>
+<div>
+<label>اليوم</label>
+<input id="day">
 </div>
 
-<div class="row">
-<div><label>التاريخ الهجري</label><input id="dateHijri"></div>
+<div>
+<label>الهجري</label>
+<input id="hijri">
+</div>
 </div>
 
 </div>
 
-<!-- الموظف -->
 <div class="section">
 
-<label>الموظف المناوب</label>
+<label>الموظف</label>
+<input id="name">
 
-<table>
-<tr>
-<th>الاسم</th>
-<th>التوقيع الإلكتروني</th>
-<th>ملاحظات</th>
-</tr>
+<label>التوقيع</label>
+<canvas id="sig"></canvas>
 
-<tr>
-<td><input id="staffName"></td>
-
-<td>
-<canvas id="signaturePad"></canvas>
-<br>
-<button onclick="clearSignature()">مسح</button>
-</td>
-
-<td><textarea id="staffNote"></textarea></td>
-</tr>
-</table>
+<button onclick="clearSig()">مسح التوقيع</button>
 
 </div>
 
-<!-- الأزرار -->
-<div class="actions">
-
-<button onclick="handleSubmit()">حفظ PDF + إرسال</button>
-
+<div class="section">
+<label>ملاحظات</label>
+<textarea id="notes"></textarea>
 </div>
+
+<button onclick="generate()">حفظ PDF + إرسال</button>
 
 </div>
 
 <script>
 
-/* رفع شعار */
-function loadLogo(e,type){
-const file=e.target.files[0];
-if(!file) return;
-const reader=new FileReader();
-reader.onload=ev=>{
-document.getElementById(type==="moe"?"moeLogo":"schoolLogo").src=ev.target.result;
-};
-reader.readAsDataURL(file);
-}
+/* ===== STATE ===== */
+const state = {};
 
-/* اليوم */
-function autoDay(){
-const g=document.getElementById("dateGreg").value;
-if(!g) return;
+/* ===== التاريخ ===== */
+function updateDate(){
+
+const d = new Date(document.getElementById("greg").value);
+if(!d) return;
+
 const days=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
-document.getElementById("day").value=days[new Date(g).getDay()];
-}
+document.getElementById("day").value = days[d.getDay()];
 
 /* هجري تقريبي */
-function convertToHijri(){
-const g=new Date(document.getElementById("dateGreg").value);
-if(!g) return;
+let jd=Math.floor((d/86400000)+2440587.5);
+let h=jd-1948440+10632;
+let n=Math.floor((h-1)/10631);
+let r=h-10631*n+354;
+let m=Math.floor((24*r)/709);
+let dd=r-Math.floor((709*m)/24);
+let y=30*n+1;
 
-const jd=Math.floor((g/86400000)+2440587.5);
-const l=jd-1948440+10632;
-const n=Math.floor((l-1)/10631);
-const l2=l-10631*n+354;
+document.getElementById("hijri").value = y+"/"+m+"/"+dd;
 
-const j=(Math.floor((10985-l2)/5316))*(Math.floor((50*l2)/17719))
-+(Math.floor(l2/5670))*(Math.floor((43*l2)/15238));
-
-const l3=l2-(Math.floor((30-j)/15))*(Math.floor((17719*j)/50))
--(Math.floor(j/16))*(Math.floor((15238*j)/43))+29;
-
-const m=Math.floor((24*l3)/709);
-const d=l3-Math.floor((709*m)/24);
-const y=30*n+j-30;
-
-document.getElementById("dateHijri").value=y+"/"+m+"/"+d;
 }
 
-/* التوقيع (إصلاح كامل) */
-let canvas,ctx,drawing=false;
+/* ===== التوقيع ===== */
+const canvas=document.getElementById("sig");
+const ctx=canvas.getContext("2d");
 
-window.onload=function(){
-
-canvas=document.getElementById("signaturePad");
-ctx=canvas.getContext("2d");
+let drawing=false;
 
 canvas.addEventListener("pointerdown",()=>drawing=true);
 canvas.addEventListener("pointerup",()=>drawing=false);
-canvas.addEventListener("pointermove",draw);
+canvas.addEventListener("pointermove",(e)=>{
 
-function draw(e){
-if(!drawing)return;
+if(!drawing) return;
+
 let r=canvas.getBoundingClientRect();
+
 ctx.lineWidth=2;
 ctx.lineTo(e.clientX-r.left,e.clientY-r.top);
 ctx.stroke();
-}
 
-window.clearSignature=function(){
+});
+
+function clearSig(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
 ctx.beginPath();
-};
-
-};
-
-/* PDF */
-async function generatePDF(){
-const { jsPDF } = window.jspdf;
-const element=document.querySelector(".page");
-
-const canvas=await html2canvas(element,{scale:2});
-const img=canvas.toDataURL("image/png");
-
-const pdf=new jsPDF("p","mm","a4");
-pdf.addImage(img,"PNG",0,0,210,297);
-pdf.save("munawaba.pdf");
 }
 
-/* WhatsApp */
+/* ===== PDF ===== */
+async function generate(){
+
+const { jsPDF } = window.jspdf;
+
+const el=document.getElementById("form");
+
+const canvasImg=await html2canvas(el,{scale:2});
+
+const img=canvasImg.toDataURL("image/png");
+
+const pdf=new jsPDF("p","mm","a4");
+
+pdf.addImage(img,"PNG",0,0,210,297);
+
+pdf.save("munawaba.pdf");
+
+/* بعد PDF */
+sendWhatsApp();
+
+}
+
+/* ===== WhatsApp ===== */
 function sendWhatsApp(){
 
-let edu=document.getElementById("eduName").value||"الإدارة العامة للتعليم";
-let school=document.getElementById("schoolNameHeader").value;
+let text="📋 استمارة مناوبة\n\n";
 
-let text="📋 استمارة مناوبة نهاية الدوام\n\n";
-
-text+="الإدارة: "+edu+"\n";
-text+="المدرسة: "+school+"\n";
-text+="الموظف: "+document.getElementById("staffName").value+"\n";
-text+="اليوم: "+document.getElementById("day").value+"\n";
-text+="ميلادي: "+document.getElementById("dateGreg").value+"\n";
-text+="هجري: "+document.getElementById("dateHijri").value+"\n";
-
-text+="\n📝 ملاحظات:\n"+document.getElementById("staffNote").value;
+text+="الإدارة: "+document.getElementById("edu").value+"\n";
+text+="المدرسة: "+document.getElementById("school").value+"\n";
+text+="الموظف: "+document.getElementById("name").value+"\n";
+text+="التاريخ: "+document.getElementById("greg").value+"\n";
+text+="الهجري: "+document.getElementById("hijri").value+"\n";
+text+="الملاحظات: "+document.getElementById("notes").value+"\n";
 
 window.open("https://wa.me/?text="+encodeURIComponent(text));
 
-}
-
-/* تشغيل كامل */
-async function handleSubmit(){
-await generatePDF();
-sendWhatsApp();
 }
 
 </script>
