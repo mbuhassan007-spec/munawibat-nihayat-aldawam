@@ -7,8 +7,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
+
 body{
-  font-family: "Arial";
+  font-family: Arial;
   background:#fff;
   margin:0;
   padding:0;
@@ -22,34 +23,52 @@ body{
   box-sizing:border-box;
 }
 
-/* الكليشة الرسمية */
+/* الكليشة */
 .header{
-  text-align:center;
-  border:2px solid #000;
+  border:2px solid #1f4e79;
   padding:10px;
   margin-bottom:10px;
 }
 
-.header .ministry{
+.logos{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  width:70px;
+  height:70px;
+  object-fit:contain;
+}
+
+.centerText{
+  text-align:center;
+  flex:1;
+}
+
+.ministry{
   font-size:14px;
   font-weight:bold;
+  color:#1f4e79;
 }
 
-.header .edu{
-  font-size:13px;
+.edu{
+  font-size:12px;
 }
 
-.header .title{
+.title{
   font-size:16px;
-  margin-top:5px;
   font-weight:bold;
+  margin-top:5px;
+  color:#1f4e79;
 }
 
-/* أقسام */
+/* الأقسام */
 .section{
-  margin-top:10px;
-  border:1px solid #000;
+  border:1px solid #1f4e79;
   padding:8px;
+  margin-top:10px;
 }
 
 label{
@@ -64,7 +83,7 @@ input{
   border:1px solid #000;
 }
 
-/* جداول */
+/* الجداول */
 table{
   width:100%;
   border-collapse:collapse;
@@ -74,8 +93,13 @@ table{
 th,td{
   border:1px solid #000;
   padding:5px;
-  text-align:center;
   font-size:12px;
+  text-align:center;
+}
+
+th{
+  background:#1f4e79;
+  color:white;
 }
 
 /* أزرار */
@@ -87,13 +111,17 @@ th,td{
 button{
   padding:8px 12px;
   margin:5px;
+  background:#1f4e79;
+  color:#fff;
+  border:none;
   cursor:pointer;
 }
 
-/* إخفاء الأزرار في الطباعة */
+/* إخفاء في الطباعة */
 @media print{
   .actions{display:none;}
 }
+
 </style>
 </head>
 
@@ -103,13 +131,37 @@ button{
 
 <!-- الكليشة -->
 <div class="header">
+
+<div class="logos">
+
+<img id="leftLogo" class="logo">
+
+<div class="centerText">
   <div class="ministry">وزارة التعليم</div>
-  <div class="edu">الإدارة العامة للتعليم ................................</div>
+  <div class="edu">الإدارة العامة للتعليم</div>
   <div class="title">تقرير المناوبة اليومي</div>
 </div>
 
-<!-- بيانات أساسية -->
+<img id="rightLogo" class="logo">
+
+</div>
+
+</div>
+
+<!-- رفع الصور -->
 <div class="section">
+
+<label>شعار وزارة التعليم</label>
+<input type="file" accept="image/*" onchange="loadLogo(event,'moe')">
+
+<label>شعار المدرسة</label>
+<input type="file" accept="image/*" onchange="loadLogo(event,'school')">
+
+</div>
+
+<!-- بيانات المدرسة -->
+<div class="section">
+
 <label>اسم المدرسة</label>
 <input id="school">
 
@@ -124,23 +176,20 @@ button{
 
 <label>التاريخ</label>
 <input type="date" id="date">
+
 </div>
 
 <!-- الموظف -->
 <div class="section">
+
 <label>الموظف المناوب</label>
-<table>
-<tr><th>الاسم</th><th>التوقيع</th><th>ملاحظات</th></tr>
-<tr>
-<td><input id="staffName"></td>
-<td><input id="staffSign"></td>
-<td><input id="staffNote"></td>
-</tr>
-</table>
+<input id="staff">
+
 </div>
 
 <!-- المتأخرون -->
 <div class="section">
+
 <label>الطلاب المتأخرون</label>
 
 <table id="lateTable">
@@ -154,10 +203,12 @@ button{
 </table>
 
 <button type="button" onclick="addLate()">+ إضافة طالب</button>
+
 </div>
 
 <!-- المخالفون -->
 <div class="section">
+
 <label>الطلاب المخالفون</label>
 
 <table id="vioTable">
@@ -171,15 +222,18 @@ button{
 </table>
 
 <button type="button" onclick="addVio()">+ إضافة طالب</button>
+
 </div>
 
 <!-- التوقيعات -->
 <div class="section">
+
 <label>وكيل الشؤون التعليمية</label>
 <input id="agent">
 
 <label>مدير المدرسة</label>
 <input id="principal">
+
 </div>
 
 <!-- العبارة -->
@@ -201,10 +255,32 @@ button{
 
 <script>
 
-/* إضافة صفوف ديناميكية */
+/* رفع الصور */
+function loadLogo(event,type){
+
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+
+    if(type === 'moe'){
+      document.getElementById("leftLogo").src = e.target.result;
+    }
+
+    if(type === 'school'){
+      document.getElementById("rightLogo").src = e.target.result;
+    }
+
+  };
+
+  reader.readAsDataURL(file);
+}
+
+/* إضافة طلاب */
 function addLate(){
-  const table = document.getElementById("lateTable");
-  const row = table.insertRow();
+  const row = document.getElementById("lateTable").insertRow();
   row.innerHTML = `
     <td><input></td>
     <td><input></td>
@@ -215,8 +291,7 @@ function addLate(){
 }
 
 function addVio(){
-  const table = document.getElementById("vioTable");
-  const row = table.insertRow();
+  const row = document.getElementById("vioTable").insertRow();
   row.innerHTML = `
     <td><input></td>
     <td><input></td>
@@ -227,33 +302,29 @@ function addVio(){
 }
 
 /* PDF */
-function getFileName(){
-  const date = document.getElementById("date").value || new Date().toISOString().split('T')[0];
-  return "تقرير_المناوبة_" + date + ".pdf";
-}
-
 function downloadPDF(){
+
   html2pdf().set({
     margin:0,
-    filename:getFileName(),
+    filename:'تقرير_المناوبة.pdf',
     image:{type:'jpeg',quality:1},
     html2canvas:{scale:2},
     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
   }).from(document.getElementById("report")).save();
+
 }
 
-/* WhatsApp */
+/* واتساب */
 function sendWhatsApp(){
 
   let text = "تقرير المناوبة اليومي\n\n";
 
   text += "المدرسة: " + document.getElementById("school").value + "\n";
   text += "التاريخ: " + document.getElementById("date").value + "\n";
-  text += "الموظف: " + document.getElementById("staffName").value + "\n";
-
-  text += "\nتم إعداد التقرير إلكترونيًا.";
+  text += "الموظف: " + document.getElementById("staff").value + "\n";
 
   window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+
 }
 
 </script>
