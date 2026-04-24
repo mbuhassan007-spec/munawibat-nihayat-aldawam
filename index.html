@@ -8,18 +8,12 @@
 
 <style>
 
-/* =========================
-   إعداد عام
-========================= */
 body{
   background:#dff3e3;
   font-family:Arial;
   margin:0;
 }
 
-/* =========================
-   صفحة A4
-========================= */
 .page{
   width:210mm;
   min-height:297mm;
@@ -28,9 +22,6 @@ body{
   background:#dff3e3;
 }
 
-/* =========================
-   الكليشة
-========================= */
 .header{
   background:#1f6f3a;
   color:#fff;
@@ -43,9 +34,6 @@ body{
   align-items:center;
 }
 
-/* =========================
-   الشعار (قابل للنقر)
-========================= */
 .logoBox{
   width:75px;
   height:75px;
@@ -64,9 +52,6 @@ body{
   object-fit:contain;
 }
 
-/* =========================
-   النص الأوسط
-========================= */
 .centerText{
   text-align:center;
   flex:1;
@@ -75,20 +60,22 @@ body{
 .title{
   font-size:16px;
   font-weight:bold;
-  margin-top:5px;
 }
 
-/* =========================
-   الحقول
-========================= */
 input{
-  width:180px;
+  width:100%;
   padding:4px;
-  border-radius:3px;
   border:1px solid #ccc;
+  border-radius:3px;
 }
 
-/* صفوف مرنة */
+textarea{
+  width:100%;
+  min-height:50px;
+  padding:4px;
+  resize:vertical;
+}
+
 .row{
   display:flex;
   gap:10px;
@@ -99,9 +86,6 @@ input{
   flex:1;
 }
 
-/* =========================
-   الأقسام
-========================= */
 .section{
   background:#fff;
   margin-top:8px;
@@ -109,13 +93,9 @@ input{
   border:1px solid #1f6f3a;
 }
 
-/* =========================
-   الجداول
-========================= */
 table{
   width:100%;
   border-collapse:collapse;
-  background:#fff;
 }
 
 th,td{
@@ -125,9 +105,6 @@ th,td{
   text-align:center;
 }
 
-/* =========================
-   أزرار
-========================= */
 .actions{
   text-align:center;
   margin:10px;
@@ -137,36 +114,14 @@ button{
   background:#1f6f3a;
   color:#fff;
   border:none;
-  padding:8px 10px;
+  padding:8px;
   margin:5px;
   cursor:pointer;
-  border-radius:3px;
 }
 
-/* =========================
-   QR
-========================= */
-#qrcode{
-  margin-top:10px;
-}
-
-/* =========================
-   الطباعة (PDF)
-========================= */
 @media print{
-
-  .actions{
-    display:none;
-  }
-
-  body{
-    background:#fff;
-  }
-
-  .page{
-    background:#fff;
-  }
-
+  .actions{display:none;}
+  body{background:#fff;}
 }
 
 </style>
@@ -176,14 +131,9 @@ button{
 
 <div class="page" id="report">
 
-<!-- =========================
-     الكليشة
-========================= -->
 <div class="header">
-
 <div class="headerRow">
 
-<!-- شعار الوزارة -->
 <label class="logoBox">
   <img id="moeLogo">
   <input type="file" accept="image/*" onchange="loadLogo(event,'moe')" hidden>
@@ -207,77 +157,57 @@ button{
 
 </div>
 
-<!-- شعار المدرسة -->
 <label class="logoBox">
   <img id="schoolLogo">
   <input type="file" accept="image/*" onchange="loadLogo(event,'school')" hidden>
 </label>
 
 </div>
-
 </div>
 
-<!-- =========================
-     بيانات أساسية
-========================= -->
 <div class="section">
 
 <div class="row">
-
 <div>
-<label>العام الدراسي</label><br>
+<label>العام الدراسي</label>
 <input id="year">
 </div>
 
 <div>
-<label>الفصل الدراسي</label><br>
+<label>الفصل الدراسي</label>
 <input id="term">
 </div>
-
 </div>
 
 <div class="row">
-
 <div>
-<label>اليوم</label><br>
+<label>اليوم</label>
 <input id="day">
 </div>
 
 <div>
-<label>التاريخ</label><br>
-<input id="date" type="date">
+<label>التاريخ</label>
+<input type="date" id="date">
+</div>
 </div>
 
 </div>
 
-</div>
-
-<!-- =========================
-     الموظف
-========================= -->
 <div class="section">
 
 <label>الموظف المناوب</label>
 
 <table>
-<tr>
-<th>الاسم</th>
-<th>التوقيع</th>
-<th>ملاحظات</th>
-</tr>
-
+<tr><th>الاسم</th><th>التوقيع</th><th>ملاحظات</th></tr>
 <tr>
 <td><input id="staffName"></td>
 <td><input id="staffSign"></td>
-<td><input id="staffNote"></td>
+<td><textarea id="staffNote"></textarea></td>
 </tr>
 </table>
 
 </div>
 
-<!-- =========================
-     المتأخرون
-========================= -->
 <div class="section">
 
 <label>المتأخرون</label>
@@ -292,9 +222,6 @@ button{
 
 </div>
 
-<!-- =========================
-     المخالفون
-========================= -->
 <div class="section">
 
 <label>المخالفون</label>
@@ -309,25 +236,17 @@ button{
 
 </div>
 
-<!-- =========================
-     QR
-========================= -->
 <div class="section">
-
-<label>رمز التحقق</label>
+<label>QR</label>
 <div id="qrcode"></div>
-
 </div>
 
 </div>
 
-<!-- =========================
-     أزرار
-========================= -->
 <div class="actions">
 
-<button onclick="generateQR();saveReport();sendWhatsApp();">حفظ وإرسال</button>
-<button onclick="window.print()">حفظ PDF</button>
+<button onclick="handleSubmit()">حفظ وإرسال</button>
+<button onclick="window.print()">PDF</button>
 
 </div>
 
@@ -335,72 +254,39 @@ button{
 
 let reportId = Date.now();
 
-/* =========================
-   رفع الصور (ضغط + عرض)
-========================= */
 function loadLogo(event,type){
-
   const file = event.target.files[0];
   if(!file) return;
-
   const reader = new FileReader();
-
   reader.onload = function(e){
-
-    if(type === "moe"){
+    if(type==="moe"){
       document.getElementById("moeLogo").src = e.target.result;
-    }
-
-    if(type === "school"){
+    }else{
       document.getElementById("schoolLogo").src = e.target.result;
     }
-
   };
-
   reader.readAsDataURL(file);
 }
 
-/* =========================
-   QR
-========================= */
 function generateQR(){
-
   document.getElementById("qrcode").innerHTML="";
-
-  let data = {
-    id:reportId,
-    school:document.getElementById("schoolNameHeader").value,
-    date:document.getElementById("date").value
-  };
-
   new QRCode(document.getElementById("qrcode"),{
-    text:JSON.stringify(data),
+    text:JSON.stringify({
+      id:reportId,
+      school:document.getElementById("schoolNameHeader").value,
+      date:document.getElementById("date").value
+    }),
     width:120,
     height:120
   });
-
 }
 
-/* =========================
-   حفظ محلي
-========================= */
 function saveReport(){
-
-  let data = {
-    id:reportId,
-    school:document.getElementById("schoolNameHeader").value,
-    date:document.getElementById("date").value,
-    staff:document.getElementById("staffName").value,
-    note:document.getElementById("staffNote").value
-  };
-
-  localStorage.setItem("report_"+reportId, JSON.stringify(data));
-
+  localStorage.setItem("report_"+reportId, JSON.stringify({
+    staff:document.getElementById("staffName").value
+  }));
 }
 
-/* =========================
-   WhatsApp شامل
-========================= */
 function sendWhatsApp(){
 
   let text = "📋 استمارة مناوبة نهاية الدوام\n\n";
@@ -410,20 +296,42 @@ function sendWhatsApp(){
   text += "التاريخ: " + document.getElementById("date").value + "\n";
   text += "الموظف: " + document.getElementById("staffName").value + "\n\n";
 
-  text += "📝 ملاحظات:\n" + document.getElementById("staffNote").value + "\n";
+  text += "📝 ملاحظات الموظف:\n" + document.getElementById("staffNote").value + "\n";
+
+  text += "\n⏰ المتأخرون:\n";
+  document.querySelectorAll("#lateTable tr").forEach((r,i)=>{
+    if(i===0)return;
+    let c=r.querySelectorAll("input,textarea");
+    text += "- " + [...c].map(x=>x.value||"-").join(" | ") + "\n";
+  });
+
+  text += "\n⚠️ المخالفون:\n";
+  document.querySelectorAll("#vioTable tr").forEach((r,i)=>{
+    if(i===0)return;
+    let c=r.querySelectorAll("input,textarea");
+    text += "- " + [...c].map(x=>x.value||"-").join(" | ") + "\n";
+  });
 
   text += "\n✅ تم تعبئة الاستمارة بنجاح";
 
   window.open("https://wa.me/?text="+encodeURIComponent(text));
-
 }
 
-/* =========================
-   إضافة صف
-========================= */
+function handleSubmit(){
+  try{generateQR();}catch(e){}
+  try{saveReport();}catch(e){}
+  try{sendWhatsApp();}catch(e){alert("خطأ في الإرسال");}
+}
+
 function addRow(id){
   let r=document.getElementById(id).insertRow();
-  r.innerHTML="<td><input></td><td><input></td><td><input></td><td><input></td><td><input></td>";
+  r.innerHTML=`
+  <td><input></td>
+  <td><input></td>
+  <td><input></td>
+  <td><input></td>
+  <td><textarea></textarea></td>
+  `;
 }
 
 </script>
