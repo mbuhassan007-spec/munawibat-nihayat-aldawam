@@ -5,6 +5,7 @@
 <title>استمارة مناوبة نهاية الدوام</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hijri-date/lib/safe.min.js"></script>
 
 <style>
 
@@ -73,7 +74,6 @@ textarea{
   width:100%;
   min-height:50px;
   padding:4px;
-  resize:vertical;
 }
 
 .row{
@@ -131,6 +131,7 @@ button{
 
 <div class="page" id="report">
 
+<!-- الكليشة -->
 <div class="header">
 <div class="headerRow">
 
@@ -165,6 +166,7 @@ button{
 </div>
 </div>
 
+<!-- البيانات -->
 <div class="section">
 
 <div class="row">
@@ -180,19 +182,22 @@ button{
 </div>
 
 <div class="row">
-<div>
-<label>اليوم</label>
-<input id="day">
-</div>
 
 <div>
-<label>التاريخ</label>
-<input type="date" id="date">
+<label>التاريخ (ميلادي)</label>
+<input id="dateGreg" type="date" onchange="convertToHijri()">
 </div>
+
+<div>
+<label>التاريخ (هجري)</label>
+<input id="dateHijri" readonly>
 </div>
 
 </div>
 
+</div>
+
+<!-- الموظف -->
 <div class="section">
 
 <label>الموظف المناوب</label>
@@ -208,6 +213,7 @@ button{
 
 </div>
 
+<!-- المتأخرون -->
 <div class="section">
 
 <label>المتأخرون</label>
@@ -222,6 +228,7 @@ button{
 
 </div>
 
+<!-- المخالفون -->
 <div class="section">
 
 <label>المخالفون</label>
@@ -236,6 +243,7 @@ button{
 
 </div>
 
+<!-- QR -->
 <div class="section">
 <label>QR</label>
 <div id="qrcode"></div>
@@ -243,22 +251,22 @@ button{
 
 </div>
 
+<!-- الأزرار -->
 <div class="actions">
-
 <button onclick="handleSubmit()">حفظ وإرسال</button>
 <button onclick="window.print()">PDF</button>
-
 </div>
 
 <script>
 
 let reportId = Date.now();
 
+/* رفع الصور */
 function loadLogo(event,type){
   const file = event.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = function(e){
+  reader.onload = e => {
     if(type==="moe"){
       document.getElementById("moeLogo").src = e.target.result;
     }else{
@@ -268,61 +276,63 @@ function loadLogo(event,type){
   reader.readAsDataURL(file);
 }
 
+/* تحويل هجري */
+function convertToHijri(){
+
+  const g = document.getElementById("dateGreg").value;
+  if(!g) return;
+
+  const d = new Date(g);
+  const h = new HijriDate(d);
+
+  document.getElementById("dateHijri").value =
+    h.getFullYear()+"/"+(h.getMonth()+1)+"/"+h.getDate();
+
+}
+
+/* QR */
 function generateQR(){
   document.getElementById("qrcode").innerHTML="";
   new QRCode(document.getElementById("qrcode"),{
     text:JSON.stringify({
       id:reportId,
-      school:document.getElementById("schoolNameHeader").value,
-      date:document.getElementById("date").value
+      school:document.getElementById("schoolNameHeader").value
     }),
     width:120,
     height:120
   });
 }
 
+/* حفظ */
 function saveReport(){
-  localStorage.setItem("report_"+reportId, JSON.stringify({
-    staff:document.getElementById("staffName").value
-  }));
+  localStorage.setItem("report_"+reportId, "saved");
 }
 
+/* واتساب */
 function sendWhatsApp(){
 
-  let text = "📋 استمارة مناوبة نهاية الدوام\n\n";
+  let text="📋 استمارة مناوبة نهاية الدوام\n\n";
 
-  text += "الإدارة: الإدارة العامة للتعليم\n";
-  text += "المدرسة: " + document.getElementById("schoolNameHeader").value + "\n";
-  text += "التاريخ: " + document.getElementById("date").value + "\n";
-  text += "الموظف: " + document.getElementById("staffName").value + "\n\n";
+  text+="الإدارة: الإدارة العامة للتعليم\n";
+  text+="المدرسة: "+document.getElementById("schoolNameHeader").value+"\n";
+  text+="الميلادي: "+document.getElementById("dateGreg").value+"\n";
+  text+="الهجري: "+document.getElementById("dateHijri").value+"\n\n";
 
-  text += "📝 ملاحظات الموظف:\n" + document.getElementById("staffNote").value + "\n";
+  text+="📝 ملاحظات:\n"+document.getElementById("staffNote").value+"\n\n";
 
-  text += "\n⏰ المتأخرون:\n";
-  document.querySelectorAll("#lateTable tr").forEach((r,i)=>{
-    if(i===0)return;
-    let c=r.querySelectorAll("input,textarea");
-    text += "- " + [...c].map(x=>x.value||"-").join(" | ") + "\n";
-  });
-
-  text += "\n⚠️ المخالفون:\n";
-  document.querySelectorAll("#vioTable tr").forEach((r,i)=>{
-    if(i===0)return;
-    let c=r.querySelectorAll("input,textarea");
-    text += "- " + [...c].map(x=>x.value||"-").join(" | ") + "\n";
-  });
-
-  text += "\n✅ تم تعبئة الاستمارة بنجاح";
+  text+="✅ تم تعبئة الاستمارة بنجاح";
 
   window.open("https://wa.me/?text="+encodeURIComponent(text));
 }
 
+/* تنفيذ */
 function handleSubmit(){
   try{generateQR();}catch(e){}
   try{saveReport();}catch(e){}
   try{sendWhatsApp();}catch(e){alert("خطأ في الإرسال");}
 }
 
+/* إضافة صف */
 function addRow(id){
   let r=document.getElementById(id).insertRow();
   r.innerHTML=`
