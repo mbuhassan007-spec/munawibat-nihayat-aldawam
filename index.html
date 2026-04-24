@@ -23,22 +23,22 @@ body{
   box-sizing:border-box;
 }
 
-/* الكليشة */
+/* الكليشة الرسمية */
 .header{
   border:2px solid #1f4e79;
   padding:10px;
   margin-bottom:10px;
 }
 
-.logos{
+.headerRow{
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
 .logo{
-  width:70px;
-  height:70px;
+  width:75px;
+  height:75px;
   object-fit:contain;
 }
 
@@ -60,7 +60,6 @@ body{
 .title{
   font-size:16px;
   font-weight:bold;
-  margin-top:5px;
   color:#1f4e79;
 }
 
@@ -117,7 +116,7 @@ button{
   cursor:pointer;
 }
 
-/* إخفاء في الطباعة */
+/* طباعة */
 @media print{
   .actions{display:none;}
 }
@@ -132,9 +131,9 @@ button{
 <!-- الكليشة -->
 <div class="header">
 
-<div class="logos">
+<div class="headerRow">
 
-<img id="leftLogo" class="logo">
+<img id="moeLogo" class="logo">
 
 <div class="centerText">
   <div class="ministry">وزارة التعليم</div>
@@ -142,13 +141,13 @@ button{
   <div class="title">تقرير المناوبة اليومي</div>
 </div>
 
-<img id="rightLogo" class="logo">
+<img id="schoolLogo" class="logo">
 
 </div>
 
 </div>
 
-<!-- رفع الصور -->
+<!-- رفع الشعارات -->
 <div class="section">
 
 <label>شعار وزارة التعليم</label>
@@ -183,7 +182,21 @@ button{
 <div class="section">
 
 <label>الموظف المناوب</label>
-<input id="staff">
+
+<table>
+<tr>
+<th>الاسم</th>
+<th>التوقيع</th>
+<th>ملاحظات</th>
+</tr>
+
+<tr>
+<td><input id="staffName"></td>
+<td><input id="staffSign" placeholder="الاسم كتوقيع"></td>
+<td><input id="staffNote"></td>
+</tr>
+
+</table>
 
 </div>
 
@@ -202,7 +215,7 @@ button{
 </tr>
 </table>
 
-<button type="button" onclick="addLate()">+ إضافة طالب</button>
+<button onclick="addLate()">+ إضافة طالب</button>
 
 </div>
 
@@ -221,7 +234,7 @@ button{
 </tr>
 </table>
 
-<button type="button" onclick="addVio()">+ إضافة طالب</button>
+<button onclick="addVio()">+ إضافة طالب</button>
 
 </div>
 
@@ -236,7 +249,6 @@ button{
 
 </div>
 
-<!-- العبارة -->
 <div class="section" style="text-align:center;font-size:13px;">
 يتم تسليم هذا التقرير إلى وكيل الشؤون التعليمية في اليوم التالي للمناوبة.
 </div>
@@ -247,7 +259,7 @@ button{
 
 </div>
 
-<!-- الأزرار -->
+<!-- أزرار -->
 <div class="actions">
 <button onclick="downloadPDF()">حفظ PDF</button>
 <button onclick="sendWhatsApp()">إرسال واتساب</button>
@@ -255,7 +267,7 @@ button{
 
 <script>
 
-/* رفع الصور */
+/* رفع الشعارات */
 function loadLogo(event,type){
 
   const file = event.target.files[0];
@@ -266,11 +278,11 @@ function loadLogo(event,type){
   reader.onload = function(e){
 
     if(type === 'moe'){
-      document.getElementById("leftLogo").src = e.target.result;
+      document.getElementById("moeLogo").src = e.target.result;
     }
 
     if(type === 'school'){
-      document.getElementById("rightLogo").src = e.target.result;
+      document.getElementById("schoolLogo").src = e.target.result;
     }
 
   };
@@ -278,7 +290,7 @@ function loadLogo(event,type){
   reader.readAsDataURL(file);
 }
 
-/* إضافة طلاب */
+/* إضافة متأخرين */
 function addLate(){
   const row = document.getElementById("lateTable").insertRow();
   row.innerHTML = `
@@ -290,6 +302,7 @@ function addLate(){
   `;
 }
 
+/* إضافة مخالفين */
 function addVio(){
   const row = document.getElementById("vioTable").insertRow();
   row.innerHTML = `
@@ -303,7 +316,6 @@ function addVio(){
 
 /* PDF */
 function downloadPDF(){
-
   html2pdf().set({
     margin:0,
     filename:'تقرير_المناوبة.pdf',
@@ -311,20 +323,20 @@ function downloadPDF(){
     html2canvas:{scale:2},
     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
   }).from(document.getElementById("report")).save();
-
 }
 
-/* واتساب */
+/* WhatsApp شامل */
 function sendWhatsApp(){
 
-  let text = "تقرير المناوبة اليومي\n\n";
+  let text = "📋 تقرير المناوبة اليومي\n\n";
 
   text += "المدرسة: " + document.getElementById("school").value + "\n";
   text += "التاريخ: " + document.getElementById("date").value + "\n";
-  text += "الموظف: " + document.getElementById("staff").value + "\n";
+  text += "الموظف: " + document.getElementById("staffName").value + "\n";
+
+  text += "\nتم إعداد التقرير إلكترونيًا.";
 
   window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
-
 }
 
 </script>
