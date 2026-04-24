@@ -2,32 +2,34 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>نظام مناوبة نهاية الدوام</title>
+<title>استمارة مناوبة نهاية الدوام</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 
+/* =========================
+   خلفية عامة
+========================= */
 body{
   background:#dff3e3;
   font-family:Arial;
   margin:0;
 }
 
-/* =======================
-   الصفحة
-======================= */
+/* =========================
+   الصفحة (مهم للطباعة)
+========================= */
 .page{
   width:210mm;
-  min-height:297mm;
   margin:auto;
   padding:10mm;
   background:#dff3e3;
 }
 
-/* =======================
+/* =========================
    الكليشة
-======================= */
+========================= */
 .header{
   background:#1f6f3a;
   color:#fff;
@@ -41,36 +43,49 @@ body{
 }
 
 .logo{
-  width:70px;
-  height:70px;
-  background:#fff;
+  width:75px;
+  height:75px;
   object-fit:contain;
+  background:#fff;
   padding:3px;
   border-radius:4px;
 }
 
+/* النص الأوسط */
 .centerText{
   text-align:center;
   flex:1;
 }
 
 .title{
-  font-weight:bold;
   font-size:16px;
+  font-weight:bold;
   margin-top:5px;
 }
 
-input{
-  padding:3px;
-  border-radius:3px;
-  border:none;
-  margin:2px;
-  width:180px;
+/* =========================
+   صفوف إدخال الكليشة
+========================= */
+.row{
+  display:flex;
+  gap:10px;
+  margin-top:6px;
 }
 
-/* =======================
-   أقسام
-======================= */
+.row div{
+  flex:1;
+}
+
+.row input{
+  width:100%;
+  padding:5px;
+  border-radius:3px;
+  border:1px solid #ccc;
+}
+
+/* =========================
+   الأقسام
+========================= */
 .section{
   background:#fff;
   margin-top:8px;
@@ -78,9 +93,14 @@ input{
   border:1px solid #1f6f3a;
 }
 
-/* =======================
-   جداول
-======================= */
+label{
+  font-weight:bold;
+  font-size:13px;
+}
+
+/* =========================
+   الجداول (بيضاء)
+========================= */
 table{
   width:100%;
   border-collapse:collapse;
@@ -95,11 +115,14 @@ th,td{
   background:#fff;
 }
 
-th{font-weight:bold;}
-
-/* =======================
+/* =========================
    أزرار
-======================= */
+========================= */
+.actions{
+  text-align:center;
+  margin:10px;
+}
+
 button{
   background:#1f6f3a;
   color:#fff;
@@ -109,26 +132,34 @@ button{
   cursor:pointer;
 }
 
-/* =======================
+/* =========================
    QR
-======================= */
+========================= */
 #qrcode{
   margin-top:10px;
 }
 
-/* =======================
-   لوحة التحكم
-======================= */
-#dashboard{
-  display:none;
-  padding:10px;
-}
+/* =========================
+   منع ظهور العناصر في الطباعة
+========================= */
+@media print{
 
-.card{
-  background:#fff;
-  padding:10px;
-  margin:8px;
-  border-right:5px solid #1f6f3a;
+  .actions,
+  #dashboard{
+    display:none !important;
+  }
+
+  body{
+    background:#fff;
+  }
+
+  .page{
+    background:#fff;
+  }
+
+  img{
+    print-color-adjust: exact;
+  }
 }
 
 </style>
@@ -136,11 +167,9 @@ button{
 
 <body>
 
-<!-- =======================
-     النظام الرئيسي
-======================= -->
-<div id="main">
-
+<!-- =========================
+   الصفحة الرئيسية
+========================= -->
 <div class="page" id="report">
 
 <!-- الكليشة -->
@@ -156,12 +185,12 @@ button{
 
 <div>
 الإدارة العامة للتعليم:
-<input id="eduName" placeholder="اسم الإدارة">
+<input id="eduName">
 </div>
 
 <div>
 مدرسة:
-<input id="schoolNameHeader" placeholder="اسم المدرسة">
+<input id="schoolNameHeader">
 </div>
 
 <div class="title">استمارة مناوبة نهاية الدوام</div>
@@ -171,23 +200,34 @@ button{
 <img id="schoolLogo" class="logo">
 
 </div>
-
 </div>
 
 <!-- بيانات -->
 <div class="section">
 
-<label>العام</label><br>
+<div class="row">
+<div>
+<label>العام الدراسي</label>
 <input id="year">
+</div>
 
-<label>الفصل</label><br>
+<div>
+<label>الفصل الدراسي</label>
 <input id="term">
+</div>
+</div>
 
-<label>اليوم</label><br>
+<div class="row">
+<div>
+<label>اليوم</label>
 <input id="day">
+</div>
 
-<label>التاريخ</label><br>
-<input id="date">
+<div>
+<label>التاريخ</label>
+<input id="date" type="date">
+</div>
+</div>
 
 </div>
 
@@ -211,9 +251,11 @@ button{
 <div class="section">
 
 <label>المتأخرون</label>
+
 <table id="lateTable">
 <tr><th>الاسم</th><th>الفصل</th><th>الزمن</th><th>الإجراء</th><th>ملاحظات</th></tr>
 </table>
+
 <button onclick="addRow('lateTable')">إضافة</button>
 
 </div>
@@ -222,9 +264,11 @@ button{
 <div class="section">
 
 <label>المخالفون</label>
+
 <table id="vioTable">
 <tr><th>الاسم</th><th>الفصل</th><th>الزمن</th><th>الإجراء</th><th>ملاحظات</th></tr>
 </table>
+
 <button onclick="addRow('vioTable')">إضافة</button>
 
 </div>
@@ -232,7 +276,7 @@ button{
 <!-- QR -->
 <div class="section">
 
-<label>رمز التحقق QR</label>
+<label>رمز التحقق</label>
 <div id="qrcode"></div>
 
 </div>
@@ -240,60 +284,41 @@ button{
 </div>
 
 <!-- أزرار -->
-<div style="text-align:center">
+<div class="actions">
 
 <button onclick="generateQR();saveReport();sendWhatsApp();">حفظ وإرسال</button>
 <button onclick="window.print()">PDF</button>
-<button onclick="openDashboard()">لوحة التحكم</button>
-
-</div>
-
-</div>
-
-<!-- =======================
-     لوحة التحكم
-======================= -->
-<div id="dashboard">
-
-<h2>📊 لوحة التحكم</h2>
-
-<div id="list"></div>
-
-<button onclick="back()">رجوع</button>
 
 </div>
 
 <script>
 
-/* =======================
-   ID لكل استمارة
-======================= */
 let reportId = Date.now();
 
-/* =======================
+/* =========================
    QR
-======================= */
+========================= */
 function generateQR(){
 
-  document.getElementById("qrcode").innerHTML = "";
+  document.getElementById("qrcode").innerHTML="";
 
   let data = {
-    id: reportId,
-    school: document.getElementById("schoolNameHeader").value,
-    date: document.getElementById("date").value
+    id:reportId,
+    school:document.getElementById("schoolNameHeader").value,
+    date:document.getElementById("date").value
   };
 
-  new QRCode(document.getElementById("qrcode"), {
-    text: JSON.stringify(data),
+  new QRCode(document.getElementById("qrcode"),{
+    text:JSON.stringify(data),
     width:120,
     height:120
   });
 
 }
 
-/* =======================
-   حفظ محلي
-======================= */
+/* =========================
+   حفظ
+========================= */
 function saveReport(){
 
   let data = {
@@ -308,65 +333,32 @@ function saveReport(){
 
 }
 
-/* =======================
-   WhatsApp
-======================= */
+/* =========================
+   WhatsApp شامل
+========================= */
 function sendWhatsApp(){
 
-  let text = "📋 استمارة مناوبة\n\n";
+  let text = "📋 استمارة مناوبة نهاية الدوام\n\n";
 
   text += "الإدارة: الإدارة العامة للتعليم\n";
   text += "المدرسة: " + document.getElementById("schoolNameHeader").value + "\n";
   text += "التاريخ: " + document.getElementById("date").value + "\n";
   text += "الموظف: " + document.getElementById("staffName").value + "\n\n";
 
-  text += "📝 ملاحظات:\n" + document.getElementById("staffNote").value + "\n";
+  text += "📝 ملاحظات:\n" + document.getElementById("staffNote").value + "\n\n";
 
-  text += "\n✅ تم تعبئة الاستمارة بنجاح";
+  text += "✅ تم تعبئة الاستمارة بنجاح";
 
   window.open("https://wa.me/?text="+encodeURIComponent(text));
 
 }
 
-/* =======================
-   إضافة صف
-======================= */
+/* =========================
+   إضافة صفوف
+========================= */
 function addRow(id){
-  let row = document.getElementById(id).insertRow();
-  row.innerHTML = `<td><input></td><td><input></td><td><input></td><td><input></td><td><input></td>`;
-}
-
-/* =======================
-   لوحة التحكم
-======================= */
-function openDashboard(){
-
-  document.getElementById("main").style.display="none";
-  document.getElementById("dashboard").style.display="block";
-
-  let list = document.getElementById("list");
-  list.innerHTML="";
-
-  for(let i=0;i<localStorage.length;i++){
-
-    let key = localStorage.key(i);
-    if(!key.includes("report_")) continue;
-
-    let d = JSON.parse(localStorage.getItem(key));
-
-    list.innerHTML += `
-      <div class="card">
-        <b>${d.school}</b><br>
-        ${d.date}<br>
-        ${d.staff}<br>
-      </div>
-    `;
-  }
-}
-
-function back(){
-  document.getElementById("dashboard").style.display="none";
-  document.getElementById("main").style.display="block";
+  let r=document.getElementById(id).insertRow();
+  r.innerHTML="<td><input></td><td><input></td><td><input></td><td><input></td><td><input></td>";
 }
 
 </script>
