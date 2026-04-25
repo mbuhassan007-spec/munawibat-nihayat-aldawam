@@ -25,6 +25,7 @@ body{
   padding:8mm;
   box-sizing:border-box;
   position:relative;
+  overflow:hidden;
 }
 
 .header{
@@ -187,7 +188,6 @@ button{
 </div>
 </div>
 
-<!-- التوثيق الزمني -->
 <div class="row">
 <div>
 <label>وقت الإرسال (ميلادي)</label>
@@ -196,7 +196,7 @@ button{
 
 <div>
 <label>وقت الإرسال (هجري)</label>
-<input id="timestampHijri" readonly>
+<input id="timestampHijri" placeholder="يمكن التعديل اليدوي">
 </div>
 </div>
 
@@ -245,7 +245,6 @@ button{
 
 </div>
 
-<!-- التذييل -->
 <div class="footer">
 <p>تُسلم الاستمارة بعد تعبئتها إلى وكيل الشؤون التعليمية</p>
 <p>حقوق التصميم: مصطفى بوحسن</p>
@@ -277,35 +276,41 @@ function generateTimestamp(){
 
 const now=new Date();
 
-timestampGreg.value=now.toLocaleString('ar-EG');
+timestampGreg.value=now.toLocaleString('ar-SA');
 
-let jd=Math.floor((now/86400000)+2440587.5);
-let h=jd-1948440+10632;
-let n=Math.floor((h-1)/10631);
-let r=h-10631*n+354;
-let m=Math.floor((24*r)/709);
-let d=r-Math.floor((709*m)/24);
-let y=30*n+1;
+/* لا نعدل إذا المستخدم عدل يدوي */
+if(timestampHijri.dataset.edited==="true") return;
+
+const hijri=new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{
+day:'numeric',month:'numeric',year:'numeric'
+}).format(now);
 
 timestampHijri.value=
-y+"/"+m+"/"+d+" - "+now.getHours()+":"+now.getMinutes()+":"+now.getSeconds();
+hijri+" - "+now.getHours()+":"+now.getMinutes()+":"+now.getSeconds();
 
 }
 
-/* توليد PDF */
+/* تتبع التعديل اليدوي */
+document.getElementById("timestampHijri").addEventListener("input",function(){
+this.dataset.edited="true";
+});
+
+/* PDF */
 async function generateAndDownloadPDF(){
 
 const { jsPDF } = window.jspdf;
 
-const element = document.getElementById("report");
+const element=document.getElementById("report");
 
-const canvas = await html2canvas(element,{scale:2});
-const img = canvas.toDataURL("image/png");
+const canvas=await html2canvas(element,{scale:2,useCORS:true});
 
-const pdf = new jsPDF("p","mm","a4");
+const img=canvas.toDataURL("image/png");
+
+const pdf=new jsPDF("p","mm","a4");
+
 pdf.addImage(img,"PNG",0,0,210,297);
 
-let fileName = "استمارة_مناوبة_"+schoolNameHeader.value+"_"+date.value+".pdf";
+let fileName="استمارة_مناوبة_"+schoolNameHeader.value+"_"+date.value+".pdf";
 
 pdf.save(fileName);
 
