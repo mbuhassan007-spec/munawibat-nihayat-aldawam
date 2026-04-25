@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <title>استمارة مناوبة نهاية الدوام</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 <style>
 
 body{
@@ -63,10 +61,21 @@ body{
 }
 
 input{
-  width:100%;
   padding:4px;
   border:1px solid #ccc;
   border-radius:3px;
+}
+
+.inlineField{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:5px;
+  margin-top:5px;
+}
+
+.inlineField input{
+  width:150px;
 }
 
 textarea{
@@ -143,12 +152,12 @@ button{
 
 <div>وزارة التعليم</div>
 
-<div>
+<div class="inlineField">
 الإدارة العامة للتعليم:
 <input id="eduName">
 </div>
 
-<div>
+<div class="inlineField">
 مدرسة:
 <input id="schoolNameHeader">
 </div>
@@ -236,11 +245,6 @@ button{
 
 </div>
 
-<div class="section">
-<label>QR</label>
-<div id="qrcode"></div>
-</div>
-
 </div>
 
 <div class="actions">
@@ -268,19 +272,6 @@ function loadLogo(event,type){
   reader.readAsDataURL(file);
 }
 
-function generateQR(){
-  document.getElementById("qrcode").innerHTML="";
-  new QRCode(document.getElementById("qrcode"),{
-    text:JSON.stringify({
-      id:reportId,
-      school:document.getElementById("schoolNameHeader").value,
-      date:document.getElementById("date").value
-    }),
-    width:120,
-    height:120
-  });
-}
-
 function saveReport(){
   localStorage.setItem("report_"+reportId, JSON.stringify({
     staff:document.getElementById("staffName").value
@@ -291,7 +282,7 @@ function sendWhatsApp(){
 
   let text = "📋 استمارة مناوبة نهاية الدوام\n\n";
 
-  text += "الإدارة: الإدارة العامة للتعليم\n";
+  text += "الإدارة: " + document.getElementById("eduName").value + "\n";
   text += "المدرسة: " + document.getElementById("schoolNameHeader").value + "\n";
   text += "التاريخ: " + document.getElementById("date").value + "\n";
   text += "الموظف: " + document.getElementById("staffName").value + "\n\n";
@@ -318,7 +309,6 @@ function sendWhatsApp(){
 }
 
 function handleSubmit(){
-  try{generateQR();}catch(e){}
   try{saveReport();}catch(e){}
   try{sendWhatsApp();}catch(e){alert("خطأ في الإرسال");}
 }
