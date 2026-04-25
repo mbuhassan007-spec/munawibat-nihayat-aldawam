@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <title>استمارة مناوبة نهاية الدوام</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 
@@ -53,20 +52,39 @@ body{
   object-fit:contain;
 }
 
-.centerText{text-align:center;flex:1;}
-.title{font-size:16px;font-weight:bold;}
+.centerText{
+  text-align:center;
+  flex:1;
+}
 
-input,textarea{
+.title{
+  font-size:16px;
+  font-weight:bold;
+}
+
+input{
   width:100%;
   padding:4px;
   border:1px solid #ccc;
   border-radius:3px;
 }
 
-textarea{min-height:60px;}
+textarea{
+  width:100%;
+  min-height:50px;
+  padding:4px;
+  resize:vertical;
+}
 
-.row{display:flex;gap:10px;margin-top:8px;}
-.row div{flex:1;}
+.row{
+  display:flex;
+  gap:10px;
+  margin-top:8px;
+}
+
+.row div{
+  flex:1;
+}
 
 .section{
   background:#fff;
@@ -75,12 +93,21 @@ textarea{min-height:60px;}
   border:1px solid #1f6f3a;
 }
 
-canvas{
+table{
   width:100%;
-  height:120px;
+  border-collapse:collapse;
+}
+
+th,td{
   border:1px solid #000;
-  background:#fff;
-  touch-action:none;
+  padding:5px;
+  font-size:12px;
+  text-align:center;
+}
+
+.actions{
+  text-align:center;
+  margin:10px;
 }
 
 button{
@@ -92,18 +119,49 @@ button{
   cursor:pointer;
 }
 
+@media print{
+  .actions{display:none;}
+  body{background:#fff;}
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="page" id="form">
+<div class="page" id="report">
 
 <div class="header">
-وزارة التعليم
+<div class="headerRow">
+
+<label class="logoBox">
+  <img id="moeLogo">
+  <input type="file" accept="image/*" onchange="loadLogo(event,'moe')" hidden>
+</label>
+
+<div class="centerText">
+
+<div>وزارة التعليم</div>
+
 <div>
-الإدارة:
+الإدارة العامة للتعليم:
 <input id="eduName">
+</div>
+
+<div>
+مدرسة:
+<input id="schoolNameHeader">
+</div>
+
+<div class="title">استمارة مناوبة نهاية الدوام</div>
+
+</div>
+
+<label class="logoBox">
+  <img id="schoolLogo">
+  <input type="file" accept="image/*" onchange="loadLogo(event,'school')" hidden>
+</label>
+
 </div>
 </div>
 
@@ -111,13 +169,13 @@ button{
 
 <div class="row">
 <div>
-<label>المدرسة</label>
-<input id="school">
+<label>العام الدراسي</label>
+<input id="year">
 </div>
 
 <div>
-<label>التاريخ</label>
-<input type="date" id="date" onchange="updateDate()">
+<label>الفصل الدراسي</label>
+<input id="term">
 </div>
 </div>
 
@@ -128,8 +186,8 @@ button{
 </div>
 
 <div>
-<label>الهجري</label>
-<input id="hijri">
+<label>التاريخ</label>
+<input type="date" id="date">
 </div>
 </div>
 
@@ -137,123 +195,143 @@ button{
 
 <div class="section">
 
-<label>الموظف</label>
-<input id="name">
+<label>الموظف المناوب</label>
 
-<label>التوقيع الإلكتروني</label>
-<canvas id="sig"></canvas>
-
-<button onclick="clearSig()">مسح التوقيع</button>
+<table>
+<tr><th>الاسم</th><th>التوقيع</th><th>ملاحظات</th></tr>
+<tr>
+<td><input id="staffName"></td>
+<td><input id="staffSign"></td>
+<td><textarea id="staffNote"></textarea></td>
+</tr>
+</table>
 
 </div>
 
 <div class="section">
-<label>ملاحظات</label>
-<textarea id="notes"></textarea>
+
+<label>المتأخرون</label>
+
+<table id="lateTable">
+<tr>
+<th>الاسم</th><th>الفصل</th><th>الزمن</th><th>الإجراء</th><th>ملاحظات</th>
+</tr>
+</table>
+
+<button onclick="addRow('lateTable')">إضافة</button>
+
 </div>
 
-<button onclick="generatePDF()">حفظ PDF + إرسال</button>
+<div class="section">
+
+<label>المخالفون</label>
+
+<table id="vioTable">
+<tr>
+<th>الاسم</th><th>الفصل</th><th>الزمن</th><th>الإجراء</th><th>ملاحظات</th>
+</tr>
+</table>
+
+<button onclick="addRow('vioTable')">إضافة</button>
+
+</div>
+
+<div class="section">
+<label>QR</label>
+<div id="qrcode"></div>
+</div>
+
+</div>
+
+<div class="actions">
+
+<button onclick="handleSubmit()">حفظ وإرسال</button>
+<button onclick="window.print()">PDF</button>
 
 </div>
 
 <script>
 
-/* ===== التاريخ ===== */
-function updateDate(){
+let reportId = Date.now();
 
-const d=new Date(document.getElementById("date").value);
-if(!d) return;
-
-const days=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
-document.getElementById("day").value=days[d.getDay()];
-
-/* هجري تقريبي */
-let jd=Math.floor((d/86400000)+2440587.5);
-let h=jd-1948440+10632;
-let n=Math.floor((h-1)/10631);
-let r=h-10631*n+354;
-let m=Math.floor((24*r)/709);
-let dd=r-Math.floor((709*m)/24);
-let y=30*n+1;
-
-document.getElementById("hijri").value=y+"/"+m+"/"+dd;
-
+function loadLogo(event,type){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    if(type==="moe"){
+      document.getElementById("moeLogo").src = e.target.result;
+    }else{
+      document.getElementById("schoolLogo").src = e.target.result;
+    }
+  };
+  reader.readAsDataURL(file);
 }
 
-/* ===== التوقيع ===== */
-let canvas=document.getElementById("sig");
-let ctx=canvas.getContext("2d");
-
-let drawing=false;
-
-canvas.addEventListener("pointerdown",()=>drawing=true);
-canvas.addEventListener("pointerup",()=>drawing=false);
-
-canvas.addEventListener("pointermove",(e)=>{
-if(!drawing) return;
-
-let r=canvas.getBoundingClientRect();
-
-ctx.lineWidth=2;
-ctx.lineCap="round";
-
-ctx.lineTo(e.clientX-r.left,e.clientY-r.top);
-ctx.stroke();
-
-});
-
-function clearSig(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-ctx.beginPath();
+function generateQR(){
+  document.getElementById("qrcode").innerHTML="";
+  new QRCode(document.getElementById("qrcode"),{
+    text:JSON.stringify({
+      id:reportId,
+      school:document.getElementById("schoolNameHeader").value,
+      date:document.getElementById("date").value
+    }),
+    width:120,
+    height:120
+  });
 }
 
-/* ===== تحويل Canvas إلى صورة ===== */
-function getSignatureImage(){
-return canvas.toDataURL("image/png");
+function saveReport(){
+  localStorage.setItem("report_"+reportId, JSON.stringify({
+    staff:document.getElementById("staffName").value
+  }));
 }
 
-/* ===== PDF احترافي ===== */
-async function generatePDF(){
-
-const { jsPDF } = window.jspdf;
-
-const element=document.getElementById("form");
-
-const canvasScreen=await html2canvas(element,{scale:2});
-const img=canvasScreen.toDataURL("image/png");
-
-const pdf=new jsPDF("p","mm","a4");
-
-/* الصفحة الأساسية */
-pdf.addImage(img,"PNG",0,0,210,297);
-
-/* إضافة التوقيع داخل PDF بشكل مستقل (احترافي) */
-const signImg=getSignatureImage();
-
-pdf.addImage(signImg,"PNG",120,210,60,25); 
-// مكان التوقيع داخل PDF
-
-pdf.save("munawaba.pdf");
-
-/* إرسال واتساب */
-sendWhatsApp();
-
-}
-
-/* ===== WhatsApp ===== */
 function sendWhatsApp(){
 
-let text="📋 استمارة مناوبة\n\n";
+  let text = "📋 استمارة مناوبة نهاية الدوام\n\n";
 
-text+="الإدارة: "+document.getElementById("eduName").value+"\n";
-text+="المدرسة: "+document.getElementById("school").value+"\n";
-text+="الموظف: "+document.getElementById("name").value+"\n";
-text+="التاريخ: "+document.getElementById("date").value+"\n";
-text+="الهجري: "+document.getElementById("hijri").value+"\n";
-text+="الملاحظات: "+document.getElementById("notes").value+"\n";
+  text += "الإدارة: الإدارة العامة للتعليم\n";
+  text += "المدرسة: " + document.getElementById("schoolNameHeader").value + "\n";
+  text += "التاريخ: " + document.getElementById("date").value + "\n";
+  text += "الموظف: " + document.getElementById("staffName").value + "\n\n";
 
-window.open("https://wa.me/?text="+encodeURIComponent(text));
+  text += "📝 ملاحظات الموظف:\n" + document.getElementById("staffNote").value + "\n";
 
+  text += "\n⏰ المتأخرون:\n";
+  document.querySelectorAll("#lateTable tr").forEach((r,i)=>{
+    if(i===0)return;
+    let c=r.querySelectorAll("input,textarea");
+    text += "- " + [...c].map(x=>x.value||"-").join(" | ") + "\n";
+  });
+
+  text += "\n⚠️ المخالفون:\n";
+  document.querySelectorAll("#vioTable tr").forEach((r,i)=>{
+    if(i===0)return;
+    let c=r.querySelectorAll("input,textarea");
+    text += "- " + [...c].map(x=>x.value||"-").join(" | ") + "\n";
+  });
+
+  text += "\n✅ تم تعبئة الاستمارة بنجاح";
+
+  window.open("https://wa.me/?text="+encodeURIComponent(text));
+}
+
+function handleSubmit(){
+  try{generateQR();}catch(e){}
+  try{saveReport();}catch(e){}
+  try{sendWhatsApp();}catch(e){alert("خطأ في الإرسال");}
+}
+
+function addRow(id){
+  let r=document.getElementById(id).insertRow();
+  r.innerHTML=`
+  <td><input></td>
+  <td><input></td>
+  <td><input></td>
+  <td><input></td>
+  <td><textarea></textarea></td>
+  `;
 }
 
 </script>
