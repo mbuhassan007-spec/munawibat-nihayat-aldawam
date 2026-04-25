@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <title>استمارة مناوبة نهاية الدوام</title>
 
+<!-- مكتبات PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 
 @page{size:A4;margin:0;}
@@ -268,7 +272,7 @@ else{schoolLogo.src=x.target.result;}
 r.readAsDataURL(f);
 }
 
-/* توثيق زمني */
+/* التوثيق الزمني */
 function generateTimestamp(){
 
 const now=new Date();
@@ -284,7 +288,26 @@ let d=r-Math.floor((709*m)/24);
 let y=30*n+1;
 
 timestampHijri.value=
-y+"/"+m+"/"+d+" - "+now.getHours()+":"+now.getMinutes();
+y+"/"+m+"/"+d+" - "+now.getHours()+":"+now.getMinutes()+":"+now.getSeconds();
+
+}
+
+/* توليد PDF */
+async function generateAndDownloadPDF(){
+
+const { jsPDF } = window.jspdf;
+
+const element = document.getElementById("report");
+
+const canvas = await html2canvas(element,{scale:2});
+const img = canvas.toDataURL("image/png");
+
+const pdf = new jsPDF("p","mm","a4");
+pdf.addImage(img,"PNG",0,0,210,297);
+
+let fileName = "استمارة_مناوبة_"+schoolNameHeader.value+"_"+date.value+".pdf";
+
+pdf.save(fileName);
 
 }
 
@@ -309,10 +332,20 @@ window.open("https://wa.me/?text="+encodeURIComponent(text));
 
 }
 
-/* تنفيذ */
-function handleSubmit(){
+/* التنفيذ */
+async function handleSubmit(){
+
+if(!schoolNameHeader.value || !staffName.value){
+alert("أكمل البيانات الأساسية");
+return;
+}
+
 generateTimestamp();
+
+await generateAndDownloadPDF();
+
 sendWhatsApp();
+
 }
 
 /* إضافة صف */
