@@ -6,6 +6,8 @@
 
 <style>
 
+@page{size:A4;margin:0;}
+
 body{
   background:#dff3e3;
   font-family:Arial;
@@ -14,10 +16,11 @@ body{
 
 .page{
   width:210mm;
-  min-height:297mm;
+  height:297mm;
   margin:auto;
-  padding:10mm;
-  background:#dff3e3;
+  padding:8mm;
+  box-sizing:border-box;
+  position:relative;
 }
 
 .header{
@@ -50,21 +53,7 @@ body{
   object-fit:contain;
 }
 
-.centerText{
-  text-align:center;
-  flex:1;
-}
-
-.title{
-  font-size:16px;
-  font-weight:bold;
-}
-
-input{
-  padding:4px;
-  border:1px solid #ccc;
-  border-radius:3px;
-}
+.centerText{text-align:center;flex:1;}
 
 .inlineField{
   display:flex;
@@ -74,32 +63,22 @@ input{
   margin-top:5px;
 }
 
-.inlineField input{
-  width:150px;
-}
-
-textarea{
-  width:100%;
-  min-height:50px;
-  padding:4px;
-  resize:vertical;
-}
-
-.row{
-  display:flex;
-  gap:10px;
-  margin-top:8px;
-}
-
-.row div{
-  flex:1;
-}
+.inlineField input{width:150px;}
 
 .section{
   background:#fff;
   margin-top:8px;
   padding:8px;
   border:1px solid #1f6f3a;
+}
+
+.row{display:flex;gap:10px;margin-top:8px;}
+.row div{flex:1;}
+
+input,textarea{
+  width:100%;
+  padding:4px;
+  border:1px solid #ccc;
 }
 
 table{
@@ -114,10 +93,15 @@ th,td{
   text-align:center;
 }
 
-.actions{
+.footer{
+  position:absolute;
+  bottom:10px;
+  width:100%;
   text-align:center;
-  margin:10px;
+  font-size:12px;
 }
+
+.actions{text-align:center;margin:10px;}
 
 button{
   background:#1f6f3a;
@@ -125,7 +109,6 @@ button{
   border:none;
   padding:8px;
   margin:5px;
-  cursor:pointer;
 }
 
 @media print{
@@ -144,8 +127,8 @@ button{
 <div class="headerRow">
 
 <label class="logoBox">
-  <img id="moeLogo">
-  <input type="file" accept="image/*" onchange="loadLogo(event,'moe')" hidden>
+<img id="moeLogo">
+<input type="file" accept="image/*" onchange="loadLogo(event,'moe')" hidden>
 </label>
 
 <div class="centerText">
@@ -162,13 +145,13 @@ button{
 <input id="schoolNameHeader">
 </div>
 
-<div class="title">استمارة مناوبة نهاية الدوام</div>
+<div style="font-weight:bold">استمارة مناوبة نهاية الدوام</div>
 
 </div>
 
 <label class="logoBox">
-  <img id="schoolLogo">
-  <input type="file" accept="image/*" onchange="loadLogo(event,'school')" hidden>
+<img id="schoolLogo">
+<input type="file" accept="image/*" onchange="loadLogo(event,'school')" hidden>
 </label>
 
 </div>
@@ -197,6 +180,19 @@ button{
 <div>
 <label>التاريخ</label>
 <input type="date" id="date">
+</div>
+</div>
+
+<!-- التوثيق الزمني -->
+<div class="row">
+<div>
+<label>وقت الإرسال (ميلادي)</label>
+<input id="timestampGreg" readonly>
+</div>
+
+<div>
+<label>وقت الإرسال (هجري)</label>
+<input id="timestampHijri" readonly>
 </div>
 </div>
 
@@ -245,83 +241,90 @@ button{
 
 </div>
 
+<!-- التذييل -->
+<div class="footer">
+<p>تُسلم الاستمارة بعد تعبئتها إلى وكيل الشؤون التعليمية</p>
+<p>حقوق التصميم: مصطفى بوحسن</p>
+</div>
+
 </div>
 
 <div class="actions">
-
 <button onclick="handleSubmit()">حفظ وإرسال</button>
 <button onclick="window.print()">PDF</button>
-
 </div>
 
 <script>
 
-let reportId = Date.now();
-
-function loadLogo(event,type){
-  const file = event.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e){
-    if(type==="moe"){
-      document.getElementById("moeLogo").src = e.target.result;
-    }else{
-      document.getElementById("schoolLogo").src = e.target.result;
-    }
-  };
-  reader.readAsDataURL(file);
+/* رفع الشعار */
+function loadLogo(e,t){
+let f=e.target.files[0];
+if(!f)return;
+let r=new FileReader();
+r.onload=x=>{
+if(t==="moe"){moeLogo.src=x.target.result;}
+else{schoolLogo.src=x.target.result;}
+};
+r.readAsDataURL(f);
 }
 
-function saveReport(){
-  localStorage.setItem("report_"+reportId, JSON.stringify({
-    staff:document.getElementById("staffName").value
-  }));
+/* توثيق زمني */
+function generateTimestamp(){
+
+const now=new Date();
+
+timestampGreg.value=now.toLocaleString('ar-EG');
+
+let jd=Math.floor((now/86400000)+2440587.5);
+let h=jd-1948440+10632;
+let n=Math.floor((h-1)/10631);
+let r=h-10631*n+354;
+let m=Math.floor((24*r)/709);
+let d=r-Math.floor((709*m)/24);
+let y=30*n+1;
+
+timestampHijri.value=
+y+"/"+m+"/"+d+" - "+now.getHours()+":"+now.getMinutes();
+
 }
 
+/* واتساب */
 function sendWhatsApp(){
 
-  let text = "📋 استمارة مناوبة نهاية الدوام\n\n";
+let text="📋 استمارة مناوبة نهاية الدوام\n\n";
 
-  text += "الإدارة: " + document.getElementById("eduName").value + "\n";
-  text += "المدرسة: " + document.getElementById("schoolNameHeader").value + "\n";
-  text += "التاريخ: " + document.getElementById("date").value + "\n";
-  text += "الموظف: " + document.getElementById("staffName").value + "\n\n";
+text+="الإدارة العامة للتعليم "+eduName.value+"\n";
+text+="المدرسة: "+schoolNameHeader.value+"\n";
+text+="التاريخ: "+date.value+"\n";
+text+="الموظف: "+staffName.value+"\n\n";
 
-  text += "📝 ملاحظات الموظف:\n" + document.getElementById("staffNote").value + "\n";
+text+="🕒 وقت الإرسال:\n";
+text+=timestampGreg.value+"\n"+timestampHijri.value+"\n\n";
 
-  text += "\n⏰ المتأخرون:\n";
-  document.querySelectorAll("#lateTable tr").forEach((r,i)=>{
-    if(i===0)return;
-    let c=r.querySelectorAll("input,textarea");
-    text += "- " + [...c].map(x=>x.value||"-").join(" | ") + "\n";
-  });
+text+="📝 الملاحظات:\n"+staffNote.value+"\n";
 
-  text += "\n⚠️ المخالفون:\n";
-  document.querySelectorAll("#vioTable tr").forEach((r,i)=>{
-    if(i===0)return;
-    let c=r.querySelectorAll("input,textarea");
-    text += "- " + [...c].map(x=>x.value||"-").join(" | ") + "\n";
-  });
+text+="\n✅ تم تعبئة الاستمارة بنجاح";
 
-  text += "\n✅ تم تعبئة الاستمارة بنجاح";
+window.open("https://wa.me/?text="+encodeURIComponent(text));
 
-  window.open("https://wa.me/?text="+encodeURIComponent(text));
 }
 
+/* تنفيذ */
 function handleSubmit(){
-  try{saveReport();}catch(e){}
-  try{sendWhatsApp();}catch(e){alert("خطأ في الإرسال");}
+generateTimestamp();
+sendWhatsApp();
 }
 
+/* إضافة صف */
 function addRow(id){
-  let r=document.getElementById(id).insertRow();
-  r.innerHTML=`
-  <td><input></td>
-  <td><input></td>
-  <td><input></td>
-  <td><input></td>
-  <td><textarea></textarea></td>
-  `;
+let r=document.getElementById(id).insertRow();
+r.innerHTML=`
+<td><input></td>
+<td><input></td>
+<td><input></td>
+<td><input></td>
+<td><textarea></textarea></td>
+`;
 }
 
 </script>
